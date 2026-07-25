@@ -1,0 +1,127 @@
+openapi: 3.1.0
+info:
+  title: Loomoon Demo API
+  version: 0.1.0
+servers:
+  - url: http://localhost:3000/api/v1
+paths:
+  /health/live:
+    get:
+      operationId: getLiveness
+      responses:
+        "200": { description: API process is alive }
+  /health/ready:
+    get:
+      operationId: getReadiness
+      responses:
+        "200": { description: Active persistence profile is ready }
+  /auth/login:
+    post:
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        "200": { description: Authenticated }
+        "401": { $ref: "#/components/responses/Error" }
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      responses:
+        "200": { description: Current user }
+        "401": { $ref: "#/components/responses/Error" }
+  /projects:
+    get:
+      operationId: listProjects
+      responses:
+        "200": { description: Project summaries }
+    post:
+      operationId: createProject
+      responses:
+        "200": { description: Created project }
+  /projects/{projectId}:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    get:
+      operationId: getProject
+      responses:
+        "200": { description: Project snapshot }
+        "404": { $ref: "#/components/responses/Error" }
+    patch:
+      operationId: renameProject
+      responses:
+        "200": { description: Renamed project }
+    delete:
+      operationId: deleteProject
+      responses:
+        "200": { description: Deleted }
+  /projects/{projectId}/events:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    get:
+      operationId: streamProjectEvents
+      responses:
+        "200":
+          description: Server-sent project state events
+          content:
+            text/event-stream: {}
+  /projects/{projectId}/agent/messages:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    post:
+      operationId: sendAgentMessage
+      responses:
+        "200": { description: Plan, analysis or confirmation proposal }
+  /projects/{projectId}/agent/confirm/{confirmationId}:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+      - name: confirmationId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      operationId: confirmAgentAction
+      responses:
+        "200": { description: Updated project }
+        "409": { $ref: "#/components/responses/Error" }
+  /projects/{projectId}/canvas/operations:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    post:
+      operationId: saveCanvas
+      responses:
+        "200": { description: Saved canvas }
+        "409": { $ref: "#/components/responses/Error" }
+components:
+  parameters:
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  schemas:
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, requestId, retryable]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            requestId: { type: string, format: uuid }
+            retryable: { type: boolean }
+  responses:
+    Error:
+      description: Stable API error
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ApiError" }

@@ -1,0 +1,62 @@
+.region-backdrop {
+  align-items: center;
+  background: #17171bba;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: fixed;
+  z-index: 50;
+}
+
+.region-dialog {
+  background: #fafaf9;
+  border-radius: 20px;
+  box-shadow: 0 30px 100px #0006;
+  padding: 20px;
+  width: min(720px, calc(100vw - 80px));
+}
+
+.region-dialog header {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+}
+
+.region-dialog header small { color: #6759dc; font-size: 9px; font-weight: 900; letter-spacing: 0.14em; }
+.region-dialog h2 { font-size: 21px; margin: 5px 0 14px; }
+.region-dialog header button { background: #ececea; border-radius: 50%; color: #777; font-size: 20px; height: 32px; width: 32px; }
+
+.region-image {
+  background: #202025;
+  border-radius: 14px;
+  cursor: crosshair;
+  line-height: 0;
+  margin: auto;
+  overflow: hidden;
+  position: relative;
+  touch-action: none;
+  width: fit-content;
+}
+
+.region-image img {
+  display: block;
+  max-height: 52vh;
+  max-width: 660px;
+  object-fit: contain;
+  user-select: none;
+}
+
+.region-image i {
+  background: #6959e833;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 9999px #1118;
+  pointer-events: none;
+  position: absolute;
+}
+
+.region-dialog > p { color: #77777d; font-size: 10px; line-height: 1.6; }
+.region-dialog textarea { border: 1px solid #dddcd8; border-radius: 10px; min-height: 68px; outline: 0; padding: 10px; resize: vertical; width: 100%; }
+.region-dialog footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+.region-dialog footer button { background: #ececea; border-radius: 9px; color: #555; font-size: 11px; padding: 10px 14px; }
+.region-dialog footer button:last-child { background: #5d50e6; color: #fff; }
+.region-dialog footer button:disabled { opacity: 0.4; }

@@ -1,0 +1,33 @@
+{
+  "name": "loomoon",
+  "private": true,
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "packages:build": "pnpm --filter @loomoon/contracts build && pnpm --filter @loomoon/config build && pnpm --filter @loomoon/design-tokens build && pnpm --filter @loomoon/ui build && pnpm --filter @loomoon/agent-ui build && pnpm --filter @loomoon/agent-runtime build && pnpm --filter @loomoon/bailian-provider build && pnpm --filter @loomoon/canvas-domain build && pnpm --filter @loomoon/database build && pnpm --filter @loomoon/object-storage build && pnpm --filter @loomoon/observability build",
+    "predev": "pnpm packages:build",
+    "dev": "pnpm --parallel --filter @loomoon/api --filter @loomoon/web dev",
+    "dev:mock": "cross-env DEMO_PROVIDER=mock pnpm dev",
+    "dev:full": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "pretest": "pnpm packages:build",
+    "test": "pnpm -r test",
+    "pretypecheck": "pnpm packages:build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "env:check": "pnpm --filter @loomoon/config env:check",
+    "demo:verify": "node scripts/verify-running-demo.mjs",
+    "demo:verify:local": "pnpm env:check && pnpm bailian:check && pnpm demo:verify && pnpm demo:performance && pnpm demo:sse",
+    "demo:verify:mock": "pnpm --filter @loomoon/api exec tsx ../../scripts/verify-mock-e2e.mts",
+    "demo:performance": "node scripts/verify-performance.mjs",
+    "demo:sse": "node scripts/verify-sse.mjs",
+    "bailian:check": "node scripts/check-bailian-models.mjs"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}

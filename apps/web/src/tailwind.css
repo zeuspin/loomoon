@@ -1,0 +1,16 @@
+@layer theme, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@theme inline {
+  --color-surface-app: var(--lm-surface-app);
+  --color-surface-canvas: var(--lm-surface-canvas);
+  --color-surface-panel: var(--lm-surface-panel);
+  --color-surface-content: var(--lm-surface-content);
+  --color-text-primary: var(--lm-text-primary);
+  --color-text-secondary: var(--lm-text-secondary);
+  --color-accent: var(--lm-accent);
+  --radius-control: var(--lm-radius-control);
+  --radius-container: var(--lm-radius-container);
+  --shadow-floating: var(--lm-shadow-floating);
+}

@@ -1,0 +1,36 @@
+{
+  "name": "@loomoon/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "predev": "pnpm --filter @loomoon/design-tokens build && pnpm --filter @loomoon/ui build && pnpm --filter @loomoon/agent-ui build",
+    "dev": "vite",
+    "pretest": "pnpm --filter @loomoon/design-tokens build && pnpm --filter @loomoon/ui build && pnpm --filter @loomoon/agent-ui build",
+    "test": "vitest run --passWithNoTests",
+    "pretypecheck": "pnpm --filter @loomoon/design-tokens build && pnpm --filter @loomoon/ui build && pnpm --filter @loomoon/agent-ui build",
+    "typecheck": "tsc --noEmit",
+    "prebuild": "pnpm --filter @loomoon/design-tokens build && pnpm --filter @loomoon/ui build && pnpm --filter @loomoon/agent-ui build",
+    "build": "tsc --noEmit && vite build",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@loomoon/agent-ui": "workspace:*",
+    "@loomoon/contracts": "workspace:*",
+    "@loomoon/canvas-domain": "workspace:*",
+    "@loomoon/design-tokens": "workspace:*",
+    "@loomoon/ui": "workspace:*",
+    "konva": "^10.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-konva": "^19.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "tailwindcss": "^4.1.0",
+    "vite": "^7.0.0"
+  }
+}

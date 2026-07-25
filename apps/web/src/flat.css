@@ -1,0 +1,285 @@
+/*
+ * Final visual policy layer.
+ * This file is imported last so the flat visual system remains independent
+ * from component layout and interaction styles.
+ */
+
+:root {
+  --flat-radius-control: 2px;
+  --flat-radius-container: 4px;
+  --flat-shadow-floating: 0 8px 20px rgb(31 31 38 / 12%);
+  --flat-shadow-dialog: 0 16px 36px rgb(22 22 28 / 18%);
+}
+
+button,
+input,
+textarea,
+select,
+.brand-mark,
+.tool,
+.empty-icon,
+.empty-canvas button,
+.zoom-control,
+.context-toolbar,
+.context-toolbar a,
+.message,
+.direction,
+.plan-card button,
+.confirmation-card button,
+.progress-card,
+.error-card,
+.composer,
+.selection-strip,
+.selection-strip img,
+.send-button,
+.panel-opener,
+.login-logo,
+.login-visual i,
+.login-card input,
+.login-card > button,
+.login-card aside,
+.login-error,
+.project-menu header button,
+.project-menu > button,
+.project-menu > button img,
+.project-menu footer button,
+.history-drawer header button,
+.history-list article button,
+.history-filters select,
+.region-dialog header button,
+.region-dialog textarea,
+.region-dialog footer button {
+  border-radius: var(--flat-radius-control) !important;
+}
+
+.plan-card,
+.confirmation-card,
+.project-menu,
+.history-list article,
+.history-thumb,
+.region-dialog,
+.region-image,
+.login-card {
+  border-radius: var(--flat-radius-container) !important;
+}
+
+.save-state i,
+.agent-status-dot,
+.progress-card i,
+.login-visual strong {
+  border-radius: 50% !important;
+}
+
+.local-pill {
+  border-radius: var(--flat-radius-control) !important;
+}
+
+.login-brand {
+  background: #302f3a !important;
+}
+
+.login-visual i {
+  background: rgb(255 255 255 / 10%) !important;
+  border: 0 !important;
+}
+
+.canvas-shell {
+  background-color: #eaeae8 !important;
+  background-image: none !important;
+}
+
+.empty-icon {
+  background: #e5e1f8 !important;
+  box-shadow: none !important;
+}
+
+.brand-mark,
+.empty-canvas button,
+.message.assistant,
+.plan-card,
+.confirmation-card,
+.composer,
+.login-logo,
+.login-card,
+.history-list article {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.local-pill {
+  border: 0 !important;
+}
+
+.project-menu {
+  border: 0 !important;
+  box-shadow: var(--flat-shadow-floating) !important;
+}
+
+.history-drawer {
+  box-shadow: -8px 0 20px rgb(31 31 38 / 10%) !important;
+}
+
+.region-dialog {
+  box-shadow: var(--flat-shadow-dialog) !important;
+}
+
+.context-toolbar,
+.zoom-control {
+  box-shadow: var(--flat-shadow-floating) !important;
+}
+
+.zoom-control {
+  border: 0 !important;
+}
+
+.login-card input,
+.region-dialog textarea,
+.history-filters select {
+  border: 1px solid #deded9 !important;
+}
+
+.login-card input:focus,
+.region-dialog textarea:focus,
+.history-filters select:focus {
+  border-color: #7366e8 !important;
+  box-shadow: 0 0 0 2px rgb(115 102 232 / 12%) !important;
+}
+
+.error-card {
+  border: 1px solid #f2c7be !important;
+}
+
+.agent-panel,
+.tool-rail {
+  border-color: #deded9 !important;
+}
+
+.selection-strip img {
+  border: 2px solid #fff !important;
+}
+
+.region-image i {
+  border: 2px solid #fff !important;
+}
+
+/* Semantic theme mapping for the legacy Demo shell during component migration. */
+:root {
+  background: var(--lm-surface-app);
+  color: var(--lm-text-primary);
+}
+
+body,
+.login-page {
+  background: var(--lm-surface-app);
+  color: var(--lm-text-primary);
+}
+
+.topbar,
+.zoom-control,
+.zoom-control button,
+.zoom-control span,
+.message.assistant,
+.plan-card,
+.confirmation-card,
+.composer,
+.project-menu,
+.history-list article,
+.login-card {
+  background: var(--lm-surface-content) !important;
+  color: var(--lm-text-primary);
+}
+
+.tool-rail,
+.agent-panel,
+.history-drawer,
+.region-dialog {
+  background: var(--lm-surface-panel) !important;
+  color: var(--lm-text-primary);
+}
+
+.canvas-shell {
+  background-color: var(--lm-surface-canvas) !important;
+}
+
+.topbar,
+.tool-rail,
+.agent-panel,
+.agent-header {
+  border-color: var(--lm-structural) !important;
+}
+
+.message.user,
+.plan-card button,
+.confirmation-card button,
+.composer-footer .send-button,
+.panel-opener {
+  background: var(--lm-accent) !important;
+  color: var(--lm-accent-contrast);
+}
+
+.brand-block span,
+.save-state,
+.tool,
+.message small,
+.plan-card > p,
+.direction span,
+.confirmation-card p,
+.composer-footer span {
+  color: var(--lm-text-secondary);
+}
+
+.direction,
+.selection-strip,
+.progress-card,
+.login-card input,
+.login-card aside,
+.project-menu > button:hover,
+.project-menu > button.active {
+  background: var(--lm-surface-subtle) !important;
+}
+
+.composer textarea,
+.login-card input,
+.region-dialog textarea,
+.history-filters select {
+  background: var(--lm-surface-content) !important;
+  color: var(--lm-text-primary);
+}
+
+.lm-agent-delivery-status {
+  color: var(--lm-text-secondary);
+  display: block;
+  font-size: 9px;
+  margin-top: 4px;
+  text-align: right;
+}
+
+.lm-agent-delivery-status--failed {
+  color: var(--lm-danger);
+}
+
+.lm-agent-delivery-status button {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  margin-left: 6px;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.lm-agent-thread {
+  grid-template-rows: minmax(0, 1fr) auto auto;
+}
+
+.lm-agent-action-dock {
+  max-height: 38vh;
+  overflow-y: auto;
+  padding: 0 12px;
+}
+
+.lm-agent-action-dock .lm-agent-tool-card {
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--lm-shadow-color) 10%, transparent);
+}

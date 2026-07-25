@@ -1,0 +1,9 @@
+.plan-card .secondary-plan-action {
+  background: #eeecff;
+  color: #5d50c7;
+  margin-top: 7px;
+}
+
+.selection-strip img {
+  cursor: pointer;
+}

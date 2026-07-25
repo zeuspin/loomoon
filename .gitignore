@@ -1,0 +1,20 @@
+# Downloaded upstream repositories and archives used for research
+/research/repos/
+
+# Local secrets
+/.env
+/.env.*
+!/.env.example
+
+# Dependencies and build output
+/node_modules/
+**/node_modules/
+/.pnpm-store/
+**/dist/
+**/.vite/
+**/coverage/
+
+# Local brainstorming artifacts
+/.superpowers/
+/.local-data/
+**/.local-data/
