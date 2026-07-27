@@ -38,8 +38,8 @@ export const serverEnvSchema = z.object({
   BAILIAN_AGENT_MODEL: z.string().min(1),
   BAILIAN_FAST_MODEL: z.string().min(1),
   BAILIAN_IMAGE_MODEL: z.string().min(1),
-  BAILIAN_IMAGE_FALLBACK_MODEL: z.string().min(1),
-  BAILIAN_DRAFT_IMAGE_MODEL: z.string().min(1).optional(),
+  BAILIAN_IMAGE_FALLBACK_MODEL: z.string().min(1).default("qwen-image-2.0-pro-2026-06-22"),
+  BAILIAN_DRAFT_IMAGE_MODEL: z.string().min(1).default("wan2.7-image"),
   BAILIAN_MASK_EDIT_MODEL: z.string().min(1).optional(),
   ENABLE_LEGACY_MASK_EDIT: booleanFromString.default(false)
 });

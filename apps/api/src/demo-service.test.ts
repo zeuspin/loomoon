@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PlanDraft } from "@loomoon/bailian-provider";
+import { BailianProviderError, type PlanDraft } from "@loomoon/bailian-provider";
 import { DemoService, MemoryProjectStore, type DemoProvider } from "./demo-service.js";
 
 const plan: PlanDraft = {
@@ -24,7 +24,7 @@ const plan: PlanDraft = {
 };
 
 class FakeProvider implements DemoProvider {
-  generated: Array<{ prompt: string; references: string[] }> = [];
+  generated: Array<{ prompt: string; references: string[]; seed?: number }> = [];
   planReferences: string[] = [];
 
   async createPlan(_brief: string, references: string[] = []): Promise<PlanDraft> {
@@ -36,13 +36,133 @@ class FakeProvider implements DemoProvider {
     return "方向一更适合作为社媒主视觉。";
   }
 
-  async generateImage(prompt: string, references: string[]): Promise<string> {
-    this.generated.push({ prompt, references });
+  async generateImage(prompt: string, references: string[], options?: Parameters<DemoProvider["generateImage"]>[2]): Promise<string> {
+    this.generated.push({
+      prompt,
+      references,
+      ...(!Array.isArray(options) && options?.seed !== undefined ? { seed: options.seed } : {}),
+    });
     return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg"/>`)}`;
   }
 }
 
 describe("DemoService", () => {
+  it("replaces a canvas generator with real image results", async () => {
+    const provider = new FakeProvider();
+    const service = new DemoService(new MemoryProjectStore(), provider);
+    const project = await service.bootstrap();
+    const generator = {
+      id: "generator-1",
+      type: "image-generator" as const,
+      x: 120,
+      y: 180,
+      width: 512,
+      height: 512,
+      generator: {
+        prompt: "月光下的白猫",
+        referenceNodeIds: [],
+        referenceAssetUrls: [],
+        modelId: "wan2.7-image-pro",
+        quality: "high" as const,
+        sizePreset: "1:1" as const,
+        aspectRatio: "1:1",
+        outputCount: 4,
+        status: "draft" as const,
+      },
+    };
+    const saved = await service.saveCanvas(project.id, [generator], project.canvas.version);
+
+    const result = await service.generateFromCanvas(project.id, generator.id, generator.generator);
+
+    expect(provider.generated).toHaveLength(4);
+    expect(result.canvas.nodes).toHaveLength(4);
+    expect(result.canvas.nodes[0]).toMatchObject({
+      id: "generator-1",
+      prompt: "月光下的白猫",
+      type: "image",
+      x: 120,
+      y: 180,
+      status: "succeeded",
+    });
+    expect(result.canvas.nodes[0]?.generator).toBeUndefined();
+    expect(result.generationHistory.every((record) => record.prompt === "月光下的白猫")).toBe(true);
+    expect(result.canvas.nodes.slice(1).every((node) => node.sourceGeneratorId === generator.id)).toBe(true);
+    expect(result.canvas.version).toBeGreaterThan(saved.canvas.version);
+  });
+
+  it("allocates an independent random seed for every output and persists it", async () => {
+    const provider = new FakeProvider();
+    const seeds = [17, 17, 90210, 2147483647, 6];
+    const service = new DemoService(
+      new MemoryProjectStore(),
+      provider,
+      async (url) => url,
+      "local-demo-user",
+      () => seeds.shift()!,
+    );
+    const project = await service.bootstrap();
+    const generator = {
+      id: "generator-random",
+      type: "image-generator" as const,
+      x: 0,
+      y: 0,
+      width: 512,
+      height: 512,
+      generator: {
+        prompt: "四只不同的猫",
+        referenceNodeIds: [],
+        referenceAssetUrls: [],
+        modelId: "wan2.7-image-pro",
+        quality: "auto" as const,
+        sizePreset: "auto" as const,
+        aspectRatio: "1:1",
+        outputCount: 4,
+        seedMode: "random" as const,
+        status: "draft" as const,
+      },
+    };
+    await service.saveCanvas(project.id, [generator], project.canvas.version);
+
+    const result = await service.generateFromCanvas(project.id, generator.id, generator.generator);
+
+    expect(provider.generated.map((call) => call.seed).sort((a, b) => a! - b!)).toEqual([6, 17, 90210, 2147483647]);
+    expect(result.canvas.nodes.map((node) => node.seed).sort((a, b) => a! - b!)).toEqual([6, 17, 90210, 2147483647]);
+    expect(result.generationHistory.map((record) => record.seed).sort((a, b) => a! - b!)).toEqual([6, 17, 90210, 2147483647]);
+  });
+
+  it("passes a fixed seed to the single generated output", async () => {
+    const provider = new FakeProvider();
+    const service = new DemoService(new MemoryProjectStore(), provider);
+    const project = await service.bootstrap();
+    const generator = {
+      id: "generator-fixed",
+      type: "image-generator" as const,
+      x: 0,
+      y: 0,
+      width: 512,
+      height: 512,
+      generator: {
+        prompt: "一只可复现的猫",
+        referenceNodeIds: [],
+        referenceAssetUrls: [],
+        modelId: "wan2.7-image-pro",
+        quality: "auto" as const,
+        sizePreset: "auto" as const,
+        aspectRatio: "1:1",
+        outputCount: 1,
+        seedMode: "fixed" as const,
+        seed: 123456,
+        status: "draft" as const,
+      },
+    };
+    await service.saveCanvas(project.id, [generator], project.canvas.version);
+
+    const result = await service.generateFromCanvas(project.id, generator.id, generator.generator);
+
+    expect(provider.generated[0]?.seed).toBe(123456);
+    expect(result.canvas.nodes[0]?.seed).toBe(123456);
+  });
+
   it("creates exactly two directions and waits for confirmation before generation", async () => {
     const provider = new FakeProvider();
     const service = new DemoService(new MemoryProjectStore(), provider);
@@ -168,7 +288,12 @@ describe("DemoService", () => {
       analyzeImages: async () => "analysis",
       generateImage: async () => {
         call += 1;
-        if (call === 2) throw new Error("provider unavailable");
+        if (call === 2) throw new BailianProviderError(
+          "BAILIAN_INVALID_RESPONSE",
+          "request-invalid-2",
+          "InvalidParameter",
+          "size is not supported for this request",
+        );
         return "data:image/png;base64,AA==";
       }
     };
@@ -184,6 +309,17 @@ describe("DemoService", () => {
     expect(updated.canvas.nodes.filter((node) => node.type === "image")).toHaveLength(3);
     expect(updated.canvas.nodes.filter((node) => node.status === "failed")).toHaveLength(1);
     const failed = updated.canvas.nodes.find((node) => node.status === "failed")!;
+    expect(failed).toMatchObject({
+      errorCode: "BAILIAN_INVALID_RESPONSE",
+      providerRequestId: "request-invalid-2",
+      providerErrorCode: "InvalidParameter",
+      providerErrorMessage: "size is not supported for this request",
+    });
+    expect(updated.generationHistory.find((record) => record.nodeId === failed.id)).toMatchObject({
+      providerRequestId: "request-invalid-2",
+      providerErrorCode: "InvalidParameter",
+      providerErrorMessage: "size is not supported for this request",
+    });
     const retried = await service.retryGeneration(project.id, failed.id);
     expect(retried.canvas.nodes.find((node) => node.id === failed.id)).toMatchObject({
       type: "image",
@@ -309,6 +445,56 @@ describe("DemoService", () => {
     const restoredImage = restored.canvas.nodes.find((node) => node.type === "image");
     expect(restoredImage?.id).not.toBe(updated.generationHistory[0]!.nodeId);
     expect(restoredImage?.assetUrl).toBe(updated.generationHistory[0]!.assetUrl);
+  });
+
+  it("does not let a stale canvas snapshot regress a completed generated node", async () => {
+    const provider = new FakeProvider();
+    const service = new DemoService(new MemoryProjectStore(), provider);
+    let project = await service.bootstrap();
+    const planned = await service.sendMessage(project.id, {
+      content: "做一组青柠气泡水广告",
+      selectedNodeIds: []
+    });
+    project = await service.getProject(project.id);
+    const staleNodes = structuredClone(project.canvas.nodes);
+
+    const completed = await service.confirm(project.id, planned.plan!.id);
+    const saved = await service.saveCanvas(
+      project.id,
+      staleNodes,
+      completed.canvas.version
+    );
+
+    expect(saved.canvas.nodes.filter((node) => node.type === "image")).toHaveLength(4);
+    expect(saved.canvas.nodes.filter((node) => node.status === "succeeded")).toHaveLength(4);
+    expect(saved.canvas.nodes.filter((node) => node.status === "queued")).toHaveLength(0);
+  });
+
+  it("repairs a generated node from successful history after a stale overwrite", async () => {
+    const provider = new FakeProvider();
+    const store = new MemoryProjectStore();
+    const service = new DemoService(store, provider);
+    let project = await service.bootstrap();
+    const planned = await service.sendMessage(project.id, {
+      content: "做一组青柠气泡水广告",
+      selectedNodeIds: []
+    });
+    project = await service.confirm(project.id, planned.plan!.id);
+    const generated = project.canvas.nodes.find((node) => node.type === "image")!;
+    const corrupted = structuredClone(project);
+    const corruptedNode = corrupted.canvas.nodes.find((node) => node.id === generated.id)!;
+    corruptedNode.type = "generation-placeholder";
+    corruptedNode.status = "queued";
+    delete corruptedNode.assetId;
+    delete corruptedNode.assetUrl;
+    await store.save(corrupted);
+
+    const recovered = await new DemoService(store, provider).getProject(project.id);
+    expect(recovered.canvas.nodes.find((node) => node.id === generated.id)).toMatchObject({
+      type: "image",
+      status: "succeeded",
+      assetUrl: project.generationHistory.find((record) => record.nodeId === generated.id)!.assetUrl
+    });
   });
 
   it("persists edit confirmation grants across service recreation", async () => {

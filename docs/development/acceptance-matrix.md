@@ -54,7 +54,7 @@ pnpm build
 
 ## 浏览器主流程
 
-在当前稳定版 Chrome 和 Edge 打开 <http://localhost:5173>，使用：
+在当前稳定版 Chrome 和 Edge 打开 <http://localhost:6001>，使用：
 
 ```text
 demo@loomoon.local / loomoon-demo

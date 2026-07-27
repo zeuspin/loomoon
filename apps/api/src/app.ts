@@ -1,11 +1,12 @@
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
-import type { CanvasNode } from "@loomoon/contracts";
+import type { CanvasGeneratorSnapshot, CanvasNode, ImageModelCapability } from "@loomoon/contracts";
 import type { DemoService } from "./demo-service.js";
 import { readFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import type { AuthService, AuthUser } from "./auth-service.js";
 import type { ProjectRegistry } from "./project-registry.js";
 import type { AgentCoordinator } from "./agent-coordinator.js";
+import { normalizeGeneratorSnapshot } from "./image-model-catalog.js";
 
 interface BuildAppOptions {
   demoService?: DemoService;
@@ -15,11 +16,13 @@ interface BuildAppOptions {
   assetsRoot?: string;
   providerName?: "bailian" | "mock";
   agentCoordinator?: AgentCoordinator;
+  imageModelCatalog?: ImageModelCapability[];
 }
 
 export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   const app = Fastify({ logger: false, bodyLimit: 25 * 1024 * 1024 });
   const rateLimits = new Map<string, { count: number; resetAt: number }>();
+  const generatorSubmissions = new Set<string>();
   const enforceRateLimit = (key: string, limit: number, windowMs = 60_000) => {
     const now = Date.now();
     const current = rateLimits.get(key);
@@ -41,6 +44,10 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     assets: options.assetsRoot ? "local-scoped" : "disabled",
     provider: options.providerName ?? "test"
   }));
+
+  if (options.imageModelCatalog) {
+    app.get("/api/v1/image-models", async () => options.imageModelCatalog);
+  }
 
   if (options.authService) {
     app.post<{ Body: { email: string; password: string } }>("/api/v1/auth/login", async (request, reply) => {
@@ -248,6 +255,31 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       (await resolveService(request, request.params.projectId)).retryGeneration(request.params.projectId, request.params.nodeId)
     );
 
+    if (options.imageModelCatalog) {
+      app.post<{
+        Params: { projectId: string; generatorNodeId: string };
+        Body: { idempotencyKey: string; config: CanvasGeneratorSnapshot };
+      }>("/api/v1/projects/:projectId/generators/:generatorNodeId/generate", async (request) => {
+        const user = options.authService ? requireUser(options.authService, request) : { id: "local" };
+        enforceRateLimit(`generation:${user.id}`, 10);
+        const key = `${user.id}:${request.params.projectId}:${request.params.generatorNodeId}:${request.body.idempotencyKey}`;
+        const service = await resolveService(request, request.params.projectId);
+        if (generatorSubmissions.has(key)) return service.getProject(request.params.projectId);
+        const config = normalizeGeneratorSnapshot(request.body.config, options.imageModelCatalog!);
+        generatorSubmissions.add(key);
+        try {
+          return await service.generateFromCanvas(
+            request.params.projectId,
+            request.params.generatorNodeId,
+            config,
+          );
+        } catch (error) {
+          generatorSubmissions.delete(key);
+          throw error;
+        }
+      });
+    }
+
     app.post<{
       Params: { projectId: string };
       Body: { dataUrl: string };
@@ -312,8 +344,14 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
               code === "INVALID_IMAGE_BYTES" || code === "INVALID_IMAGE_DATA_URL" ||
               code === "INVALID_IMAGE_MIME" || code === "IMAGE_DECODE_FAILED" ||
               code === "INVALID_ASSET_URL" ||
-              code === "INVALID_ASSET_PATH"
+              code === "INVALID_ASSET_PATH" || code === "INVALID_GENERATOR_CONFIG"
             ? 400
+            : code === "IMAGE_MODEL_UNAVAILABLE"
+              ? 400
+              : code === "GENERATOR_NOT_FOUND"
+                ? 404
+                : code === "GENERATOR_ALREADY_RUNNING"
+                  ? 409
             : 500;
     return reply.status(statusCode).send({
       error: {
@@ -371,7 +409,11 @@ function userMessageFor(code: string): string {
     INVALID_IMAGE_MIME: "仅支持 JPG、PNG 和 WebP。",
     IMAGE_DECODE_FAILED: "图片无法解码，请更换文件。",
     INVALID_ASSET_URL: "资产地址无效。",
-    INVALID_ASSET_PATH: "资产路径无效。"
+    INVALID_ASSET_PATH: "资产路径无效。",
+    INVALID_GENERATOR_CONFIG: "图像生成参数无效。",
+    IMAGE_MODEL_UNAVAILABLE: "所选图像模型当前不可用。",
+    GENERATOR_NOT_FOUND: "图像生成器不存在。",
+    GENERATOR_ALREADY_RUNNING: "该图像生成器正在运行。"
   };
   return messages[code] ?? "操作失败，请稍后重试。";
 }

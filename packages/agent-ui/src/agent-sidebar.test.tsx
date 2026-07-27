@@ -57,7 +57,7 @@ describe("AgentSidebar", () => {
   test("renders the real assistant thread and accessible composer", () => {
     const markup = renderSidebar();
 
-    expect(markup).toContain("Design Agent");
+    expect(markup).toContain("Demo");
     expect(markup).toContain("Choose a visual direction.");
     expect(markup).toContain('aria-label="发送消息"');
     expect(markup).not.toContain("取消生成");
@@ -113,5 +113,20 @@ describe("AgentSidebar", () => {
 
     expect(markup).toContain("正在理解需求");
     expect(markup).toContain("正在提交给 Pi Agent...");
+  });
+
+  test("renders a homepage launch prompt immediately in the new conversation", () => {
+    const markup = renderSidebar({
+      agentSessionId: "session-2",
+      agentMessages: [],
+      initialMessage: {
+        id: "launch-1",
+        text: "设计一张夏日海报",
+        nodeIds: [],
+        createdAt: "2026-07-27T00:00:00.000Z",
+      },
+    });
+
+    expect(markup).toContain("设计一张夏日海报");
   });
 });

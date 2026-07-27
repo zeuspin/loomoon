@@ -8,6 +8,7 @@ const styleFiles = readdirSync(sourceDirectory)
   .filter((fileName) => fileName.endsWith(".css"))
   .sort();
 const flatStyleSource = readFileSync(join(sourceDirectory, "flat.css"), "utf8");
+const enhancementStyleSource = readFileSync(join(sourceDirectory, "enhancements.css"), "utf8");
 
 describe("flat visual style contract", () => {
   test("keeps non-circular corner radii at four pixels or less", () => {
@@ -66,5 +67,28 @@ describe("flat visual style contract", () => {
     expect(radii.every((radius) => radius <= 4)).toBe(true);
     expect(appSource).toContain("canvasTheme.radius.media");
     expect(appSource).toContain("canvasTheme.selection");
+  });
+
+  test("keeps image generator settings compact and free from footer button inheritance", () => {
+    expect(enhancementStyleSource).toContain(".canvas-image-settings{max-height:min(520px,calc(100vh - 96px))");
+    expect(enhancementStyleSource).toContain("width:440px");
+    expect(enhancementStyleSource).toContain(".canvas-generator-card footer>.canvas-generator-submit");
+    expect(enhancementStyleSource).toContain(".canvas-image-quality button{background:#fff!important");
+  });
+
+  test("allows image settings to close from outside clicks and Escape", () => {
+    const overlaySource = readFileSync(join(sourceDirectory, "generator-overlay.tsx"), "utf8");
+    expect(overlaySource).toContain('document.addEventListener("pointerdown"');
+    expect(overlaySource).toContain('event.key === "Escape"');
+  });
+
+  test("does not clip the reference upload menu inside the thumbnail scroller", () => {
+    expect(enhancementStyleSource).toContain(".canvas-generator-reference-row{align-items:center;display:flex;gap:8px;overflow:visible");
+    expect(enhancementStyleSource).toContain(".canvas-generator-references{display:flex;flex:1 1 auto;gap:8px;overflow-x:auto");
+  });
+
+  test("keeps reference controls adjacent and their actions visible", () => {
+    expect(enhancementStyleSource).toContain(".canvas-generator-references{display:flex;flex:0 1 auto;gap:8px;max-width:calc(100% - 80px);overflow-x:auto;padding:8px 8px 2px}");
+    expect(enhancementStyleSource).toContain(".canvas-generator-submit span{color:#fff!important");
   });
 });

@@ -12,9 +12,15 @@ import type { DemoProvider } from "./demo-service.js";
 import { AuthService } from "./auth-service.js";
 import { LocalGenerationExecutor } from "./local-generation-executor.js";
 import { ProjectRegistry } from "./project-registry.js";
+import { createImageModelCatalog } from "./image-model-catalog.js";
 
 loadDotEnv({ path: resolve(import.meta.dirname, "../../../.env") });
 const env = parseServerEnv(process.env);
+const imageModelCatalog = createImageModelCatalog({
+  primaryModelId: env.BAILIAN_IMAGE_MODEL,
+  fallbackModelId: env.BAILIAN_IMAGE_FALLBACK_MODEL,
+  draftModelId: env.BAILIAN_DRAFT_IMAGE_MODEL
+});
 const dataRoot = resolve(".local-data");
 const assetsRoot = resolve(dataRoot, "assets");
 const assets = new LocalAssetStore(assetsRoot);
@@ -37,11 +43,22 @@ const bailianProvider: DemoProvider = {
     ),
   decideImageIntent: (instruction, selectedImageCount) =>
     bailian.decideImageIntent(instruction, selectedImageCount),
-  generateImage: async (prompt, imageUrls, bbox) =>
+  generateImage: async (prompt, imageUrls, options) =>
     bailian.generateImage(
       prompt,
-      await Promise.all(imageUrls.map((url) => assets.toDataUrl(url))),
-      bbox ? [[bbox]] : undefined
+      await Promise.all(imageUrls.map((url) => url.startsWith("data:image/") ? url : assets.toDataUrl(url))),
+      Array.isArray(options)
+        ? [[options]]
+        : options
+          ? {
+              ...(options.modelId ? { modelId: options.modelId } : {}),
+              ...(options.width ? { width: options.width } : {}),
+              ...(options.height ? { height: options.height } : {}),
+              ...(options.quality ? { quality: options.quality } : {}),
+              ...(options.seed !== undefined ? { seed: options.seed } : {}),
+              ...(options.bbox ? { bboxList: [[options.bbox]] } : {})
+            }
+          : undefined
     )
 };
 const provider: DemoProvider =
@@ -108,7 +125,8 @@ const app = buildApp({
   projectRegistry,
   assetsRoot,
   providerName: env.DEMO_PROVIDER,
-  agentCoordinator
+  agentCoordinator,
+  imageModelCatalog
 });
 
 await app.listen({

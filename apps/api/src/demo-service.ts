@@ -1,10 +1,12 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { createHash } from "node:crypto";
+import { createHash, randomInt } from "node:crypto";
 import { dirname } from "node:path";
 import type {
   AuditEvent,
   AgentMessage,
   AgentRunResult,
+  CanvasGeneratorSnapshot,
+  CanvasNode,
   ConfirmationGrant,
   CreativePlan,
   DemoProject,
@@ -22,7 +24,14 @@ export interface DemoProvider {
   generateImage(
     prompt: string,
     references: string[],
-    bbox?: [number, number, number, number]
+    options?: [number, number, number, number] | {
+      modelId?: string;
+      width?: number;
+      height?: number;
+      quality?: "auto" | "high" | "medium" | "low";
+      seed?: number;
+      bbox?: [number, number, number, number];
+    }
   ): Promise<string | { url: string; requestId?: string; model?: string }>;
 }
 
@@ -80,7 +89,8 @@ export class DemoService {
     private readonly store: ProjectStore,
     private readonly provider: DemoProvider,
     private readonly materializeAsset: (url: string) => Promise<string> = async (url) => url,
-    private readonly actorUserId = "local-demo-user"
+    private readonly actorUserId = "local-demo-user",
+    private readonly createImageSeed: () => number = () => randomInt(0, 2147483648)
   ) {}
 
   async appendAgentMessage(
@@ -148,6 +158,31 @@ export class DemoService {
       for (const record of existing.generationHistory) {
         const migratedUrl = await migrateAssetUrl(record.assetUrl);
         if (migratedUrl) record.assetUrl = migratedUrl;
+      }
+      const successfulHistory = new Map(
+        existing.generationHistory
+          .filter((record) => record.status === "succeeded" && record.assetUrl)
+          .map((record) => [record.nodeId, record])
+      );
+      const repairedNodeIds: string[] = [];
+      for (const node of existing.canvas.nodes) {
+        if (node.status !== "queued" && node.status !== "running") continue;
+        const record = successfulHistory.get(node.id);
+        if (!record?.assetUrl) continue;
+        node.type = "image";
+        node.status = "succeeded";
+        node.assetId ??= crypto.randomUUID();
+        node.assetUrl = record.assetUrl;
+        if (record.providerRequestId) node.providerRequestId = record.providerRequestId;
+        if (record.resolvedModel) node.resolvedModel = record.resolvedModel;
+        delete node.errorCode;
+        repairedNodeIds.push(node.id);
+      }
+      if (repairedNodeIds.length > 0) {
+        existing.canvas.version += 1;
+        existing.canvas.updatedAt = new Date().toISOString();
+        appendCanvasOperation(existing, "system", "recovery", repairedNodeIds);
+        migrated = true;
       }
       if (!this.#loaded) {
         const interrupted = existing.canvas.nodes.filter((node) => node.status === "running");
@@ -218,10 +253,101 @@ export class DemoService {
   async saveCanvas(projectId: string, nodes: DemoProject["canvas"]["nodes"], version: number): Promise<DemoProject> {
     const project = await this.getProject(projectId);
     if (version !== project.canvas.version) throw new Error("CANVAS_VERSION_CONFLICT");
-    project.canvas.nodes = nodes;
+    const currentNodes = new Map(project.canvas.nodes.map((node) => [node.id, node]));
+    project.canvas.nodes = nodes.map((node) =>
+      preserveGenerationProgress(node, currentNodes.get(node.id))
+    );
     project.canvas.version += 1;
     project.canvas.updatedAt = new Date().toISOString();
     appendCanvasOperation(project, "user", "replace_snapshot", nodes.map((node) => node.id));
+    await this.store.save(project);
+    return project;
+  }
+
+  async generateFromCanvas(
+    projectId: string,
+    generatorNodeId: string,
+    config: CanvasGeneratorSnapshot,
+  ): Promise<DemoProject> {
+    const project = await this.getProject(projectId);
+    const generatorIndex = project.canvas.nodes.findIndex(
+      (node) => node.id === generatorNodeId && node.type === "image-generator",
+    );
+    const generator = project.canvas.nodes[generatorIndex];
+    if (!generator) throw new Error("GENERATOR_NOT_FOUND");
+    if (generator.generator?.status === "running" || generator.generator?.status === "submitting") {
+      throw new Error("GENERATOR_ALREADY_RUNNING");
+    }
+    generator.generator = {
+      ...generator.generator!,
+      ...config,
+      referenceNodeIds: generator.generator?.referenceNodeIds ?? [],
+      status: "running",
+    };
+    await this.store.save(project);
+    const gap = 24;
+    const results: CanvasNode[] = Array.from({ length: config.outputCount }, (_, index): CanvasNode => ({
+      ...generator,
+      id: index === 0 ? generator.id : crypto.randomUUID(),
+      name: `生成结果 ${index + 1}`,
+      prompt: config.prompt,
+      sourceGeneratorId: generator.id,
+      status: "running" as const,
+      type: "generation-placeholder" as const,
+      x: generator.x + (index % 2) * (generator.width + gap),
+      y: generator.y + Math.floor(index / 2) * (generator.height + gap),
+    }));
+    results.forEach((result) => delete result.generator);
+    let failedCount = 0;
+    const usedSeeds = new Set<number>();
+    const nextRandomSeed = () => {
+      let seed = this.createImageSeed();
+      while (usedSeeds.has(seed)) seed = this.createImageSeed();
+      usedSeeds.add(seed);
+      return seed;
+    };
+    await Promise.all(results.map(async (result) => {
+      const seed = config.seedMode === "fixed" && config.seed !== undefined
+        ? config.seed
+        : nextRandomSeed();
+      result.seed = seed;
+      try {
+        const generated = normalizeGeneratedImage(await this.provider.generateImage(
+          config.prompt,
+          config.referenceAssetUrls,
+          {
+            modelId: config.modelId,
+            quality: config.quality,
+            seed,
+            ...(config.width ? { width: config.width } : {}),
+            ...(config.height ? { height: config.height } : {}),
+          },
+        ));
+        result.type = "image";
+        result.assetId = crypto.randomUUID();
+        result.assetUrl = await this.materializeAsset(generated.url);
+        result.status = "succeeded";
+        if (generated.requestId) result.providerRequestId = generated.requestId;
+        if (generated.model) result.resolvedModel = generated.model;
+      } catch (error) {
+        failedCount += 1;
+        applyProviderFailure(result, error);
+      }
+    }));
+    project.canvas.nodes.splice(generatorIndex, 1, ...results);
+    project.generationHistory.push(...results.map((node) => recordForNode(node, "text_to_image")));
+    project.auditLog.push(auditEvent(
+      this.actorUserId,
+      projectId,
+      generatorNodeId,
+      "generate_images",
+      results.map((node) => node.id),
+      failedCount ? "failed" : "succeeded",
+      failedCount ? `${failedCount} task(s) failed` : undefined,
+    ));
+    project.canvas.version += 1;
+    project.canvas.updatedAt = new Date().toISOString();
+    appendCanvasOperation(project, "agent", "generation_result", results.map((node) => node.id));
     await this.store.save(project);
     return project;
   }
@@ -486,6 +612,8 @@ export class DemoService {
       .filter((url): url is string => Boolean(url));
     node.status = "running";
     delete node.errorCode;
+    delete node.providerErrorCode;
+    delete node.providerErrorMessage;
     try {
       const generated = normalizeGeneratedImage(
         await this.provider.generateImage(node.prompt, references, node.editBbox)
@@ -497,8 +625,7 @@ export class DemoService {
       if (generated.model) node.resolvedModel = generated.model;
       node.status = "succeeded";
     } catch (error) {
-      node.status = "failed";
-      node.errorCode = providerErrorCode(error);
+      applyProviderFailure(node, error);
     }
     const previous = project.generationHistory.findLast((record) => record.nodeId === node.id);
     project.generationHistory.push(recordForNode(node, node.editBbox ? "region_edit" : node.sourceNodeIds?.length ? "image_edit" : "text_to_image", previous?.id));
@@ -597,8 +724,7 @@ export class DemoService {
             placeholder.status = "succeeded";
           } catch (error) {
             failedCount += 1;
-            placeholder.status = "failed";
-            placeholder.errorCode = providerErrorCode(error);
+            applyProviderFailure(placeholder, error);
           }
         })
       );
@@ -682,8 +808,7 @@ export class DemoService {
             if (generated.model) node.resolvedModel = generated.model;
             node.status = "succeeded";
           } catch (error) {
-            node.status = "failed";
-            node.errorCode = providerErrorCode(error);
+            applyProviderFailure(node, error);
           }
         })
       );
@@ -866,7 +991,10 @@ function recordForNode(
     ...(retryOfId ? { retryOfId } : {}),
     ...(node.errorCode ? { errorCode: node.errorCode } : {}),
     ...(node.providerRequestId ? { providerRequestId: node.providerRequestId } : {}),
-    ...(node.resolvedModel ? { resolvedModel: node.resolvedModel } : {})
+    ...(node.providerErrorCode ? { providerErrorCode: node.providerErrorCode } : {}),
+    ...(node.providerErrorMessage ? { providerErrorMessage: node.providerErrorMessage } : {}),
+    ...(node.resolvedModel ? { resolvedModel: node.resolvedModel } : {}),
+    ...(node.seed !== undefined ? { seed: node.seed } : {})
   };
 }
 
@@ -891,8 +1019,27 @@ function mergeGeneratedNode(
     ...(generated.editBbox ? { editBbox: generated.editBbox } : {}),
     ...(generated.errorCode ? { errorCode: generated.errorCode } : {}),
     ...(generated.providerRequestId ? { providerRequestId: generated.providerRequestId } : {}),
-    ...(generated.resolvedModel ? { resolvedModel: generated.resolvedModel } : {})
+    ...(generated.providerErrorCode ? { providerErrorCode: generated.providerErrorCode } : {}),
+    ...(generated.providerErrorMessage ? { providerErrorMessage: generated.providerErrorMessage } : {}),
+    ...(generated.resolvedModel ? { resolvedModel: generated.resolvedModel } : {}),
+    ...(generated.seed !== undefined ? { seed: generated.seed } : {})
   };
+}
+
+function preserveGenerationProgress(
+  incoming: DemoProject["canvas"]["nodes"][number],
+  current?: DemoProject["canvas"]["nodes"][number]
+): DemoProject["canvas"]["nodes"][number] {
+  if (!current || generationStatusRank(current.status) <= generationStatusRank(incoming.status)) {
+    return incoming;
+  }
+  return mergeGeneratedNode(incoming, current);
+}
+
+function generationStatusRank(status?: DemoProject["canvas"]["nodes"][number]["status"]): number {
+  if (status === "succeeded" || status === "failed") return 2;
+  if (status === "running") return 1;
+  return 0;
 }
 
 function mergeById<T extends { id: string }>(current: T[], incoming: T[]): T[] {
@@ -920,7 +1067,10 @@ function appendCanvasOperation(
 }
 
 function providerErrorCode(error: unknown): string {
-  const message = error instanceof Error ? error.message.split(":")[0] ?? "" : "";
+  const structuredCode = error && typeof error === "object" && "code" in error
+    ? String((error as { code: unknown }).code)
+    : "";
+  const message = structuredCode || (error instanceof Error ? error.message.split(":")[0] ?? "" : "");
   const allowed = new Set([
     "BAILIAN_AUTH_ERROR",
     "BAILIAN_RATE_LIMITED",
@@ -929,4 +1079,19 @@ function providerErrorCode(error: unknown): string {
     "BAILIAN_UNAVAILABLE"
   ]);
   return allowed.has(message) ? message : "BAILIAN_UNAVAILABLE";
+}
+
+function applyProviderFailure(node: CanvasNode, error: unknown): void {
+  node.status = "failed";
+  node.errorCode = providerErrorCode(error);
+  if (!error || typeof error !== "object") return;
+  if ("requestId" in error && typeof error.requestId === "string") {
+    node.providerRequestId = error.requestId;
+  }
+  if ("providerCode" in error && typeof error.providerCode === "string") {
+    node.providerErrorCode = error.providerCode.slice(0, 120);
+  }
+  if ("providerMessage" in error && typeof error.providerMessage === "string") {
+    node.providerErrorMessage = error.providerMessage.slice(0, 500);
+  }
 }
