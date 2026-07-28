@@ -1,0 +1,22 @@
+:root {
+  --surface-canvas: var(--primitive-color-canvas);
+  --surface-panel: var(--primitive-color-surface);
+  --surface-floating: var(--primitive-color-surface-translucent);
+  --text-primary: var(--primitive-color-ink);
+  --text-secondary: var(--primitive-color-muted);
+  --border-subtle: var(--primitive-color-border);
+  --action-primary: var(--primitive-color-brand);
+  --action-primary-soft: var(--primitive-color-brand-soft);
+  --focus-ring: var(--primitive-color-focus);
+  --status-danger: var(--primitive-color-danger);
+  --status-success: var(--primitive-color-success);
+  --font-ui: var(--primitive-font-ui);
+  --font-latin: var(--primitive-font-latin);
+  --space-1: var(--primitive-size-1);
+  --space-2: var(--primitive-size-2);
+  --space-3: var(--primitive-size-3);
+  --space-4: var(--primitive-size-4);
+  --space-5: var(--primitive-size-5);
+  --space-6: var(--primitive-size-6);
+}
+

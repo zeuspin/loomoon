@@ -1,0 +1,37 @@
+:root {
+  --primitive-color-canvas: #f5f4f0;
+  --primitive-color-surface: #ffffff;
+  --primitive-color-surface-translucent: rgba(255, 255, 255, 0.94);
+  --primitive-color-ink: #191916;
+  --primitive-color-muted: #6e6d67;
+  --primitive-color-border: #dedcd5;
+  --primitive-color-brand: #f36b2b;
+  --primitive-color-brand-soft: #fff0e8;
+  --primitive-color-focus: #315cf4;
+  --primitive-color-danger: #c83b37;
+  --primitive-color-success: #26845b;
+  --primitive-font-ui: "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  --primitive-font-latin: Inter, "Segoe UI", sans-serif;
+  --primitive-size-1: 4px;
+  --primitive-size-2: 8px;
+  --primitive-size-3: 12px;
+  --primitive-size-4: 16px;
+  --primitive-size-5: 20px;
+  --primitive-size-6: 24px;
+  --primitive-size-8: 32px;
+  --primitive-size-10: 40px;
+  --primitive-radius-base: 10px;
+  --primitive-radius-panel: 18px;
+  --primitive-radius-pill: 999px;
+  --primitive-border-thin: 1px;
+  --primitive-shadow-float: 0 18px 56px rgba(40, 38, 32, 0.12), 0 2px 10px rgba(40, 38, 32, 0.08);
+  --primitive-shadow-soft: 0 8px 24px rgba(40, 38, 32, 0.08);
+  --primitive-blur-panel: 20px;
+  --primitive-duration-fast: 140ms;
+  --primitive-duration-panel: 210ms;
+  --primitive-ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --primitive-z-canvas: 0;
+  --primitive-z-panel: 20;
+  --primitive-z-popover: 40;
+}
+
