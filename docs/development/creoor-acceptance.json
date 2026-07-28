@@ -1,0 +1,1295 @@
+{
+    "version":  1,
+    "baselineCommit":  "draft",
+    "generatedFrom":  "docs/superpowers/specs/2026-07-28-creoor-workbench-design.md",
+    "rows":  [
+                 {
+                     "parentCr":  "CR-A11Y-001",
+                     "clause":  "CR-A11Y-001.A01",
+                     "task":  11,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-A11Y-001",
+                     "clause":  "CR-A11Y-001.A02",
+                     "task":  11,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-A11Y-001",
+                     "clause":  "CR-A11Y-001.A03",
+                     "task":  11,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-A11Y-001",
+                     "clause":  "CR-A11Y-001.A04",
+                     "task":  11,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-AGENT-001",
+                     "clause":  "CR-AGENT-001.A01",
+                     "task":  9,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-AGENT-001",
+                     "clause":  "CR-AGENT-001.A02",
+                     "task":  9,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-AGENT-001",
+                     "clause":  "CR-AGENT-001.A03",
+                     "task":  9,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-AGENT-001",
+                     "clause":  "CR-AGENT-001.A04",
+                     "task":  9,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-AGENT-002",
+                     "clause":  "CR-AGENT-002.A01",
+                     "task":  9,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-AGENT-002",
+                     "clause":  "CR-AGENT-002.A02",
+                     "task":  9,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-AGENT-002",
+                     "clause":  "CR-AGENT-002.A03",
+                     "task":  9,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-CANVAS-001",
+                     "clause":  "CR-CANVAS-001.A01",
+                     "task":  6,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-CANVAS-001",
+                     "clause":  "CR-CANVAS-001.A02",
+                     "task":  6,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-CANVAS-001",
+                     "clause":  "CR-CANVAS-001.A03",
+                     "task":  6,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-CANVAS-001",
+                     "clause":  "CR-CANVAS-001.A04",
+                     "task":  6,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-CANVAS-002",
+                     "clause":  "CR-CANVAS-002.A01",
+                     "task":  6,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-CANVAS-002",
+                     "clause":  "CR-CANVAS-002.A02",
+                     "task":  6,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-CANVAS-002",
+                     "clause":  "CR-CANVAS-002.A03",
+                     "task":  6,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-CANVAS-002",
+                     "clause":  "CR-CANVAS-002.A04",
+                     "task":  6,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-CANVAS-003",
+                     "clause":  "CR-CANVAS-003.A01",
+                     "task":  6,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-CANVAS-003",
+                     "clause":  "CR-CANVAS-003.A02",
+                     "task":  6,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-CANVAS-003",
+                     "clause":  "CR-CANVAS-003.A03",
+                     "task":  6,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-DATA-001",
+                     "clause":  "CR-DATA-001.A01",
+                     "task":  2,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-DATA-001",
+                     "clause":  "CR-DATA-001.A02",
+                     "task":  2,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-DATA-001",
+                     "clause":  "CR-DATA-001.A03",
+                     "task":  2,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-DATA-001",
+                     "clause":  "CR-DATA-001.A04",
+                     "task":  2,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-DATA-001",
+                     "clause":  "CR-DATA-001.A05",
+                     "task":  2,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-DATA-001",
+                     "clause":  "CR-DATA-001.A06",
+                     "task":  2,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-DATA-001",
+                     "clause":  "CR-DATA-001.A07",
+                     "task":  2,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-DATA-002",
+                     "clause":  "CR-DATA-002.A01",
+                     "task":  2,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-DATA-002",
+                     "clause":  "CR-DATA-002.A02",
+                     "task":  2,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-DATA-002",
+                     "clause":  "CR-DATA-002.A03",
+                     "task":  2,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-DATA-002",
+                     "clause":  "CR-DATA-002.A04",
+                     "task":  2,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-DATA-002",
+                     "clause":  "CR-DATA-002.A05",
+                     "task":  2,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-DATA-002",
+                     "clause":  "CR-DATA-002.A06",
+                     "task":  2,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-EXPORT-001",
+                     "clause":  "CR-EXPORT-001.A01",
+                     "task":  5,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-EXPORT-001",
+                     "clause":  "CR-EXPORT-001.A02",
+                     "task":  5,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-EXPORT-001",
+                     "clause":  "CR-EXPORT-001.A03",
+                     "task":  5,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-EXPORT-001",
+                     "clause":  "CR-EXPORT-001.A04",
+                     "task":  5,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-GEN-001",
+                     "clause":  "CR-GEN-001.A01",
+                     "task":  10,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-GEN-001",
+                     "clause":  "CR-GEN-001.A02",
+                     "task":  10,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-GEN-001",
+                     "clause":  "CR-GEN-001.A03",
+                     "task":  10,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-GEN-001",
+                     "clause":  "CR-GEN-001.A04",
+                     "task":  10,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-GEN-001",
+                     "clause":  "CR-GEN-001.A05",
+                     "task":  10,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-GEN-001",
+                     "clause":  "CR-GEN-001.A06",
+                     "task":  10,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-GEN-001",
+                     "clause":  "CR-GEN-001.A07",
+                     "task":  10,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-GEN-001",
+                     "clause":  "CR-GEN-001.A08",
+                     "task":  10,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-GEN-001",
+                     "clause":  "CR-GEN-001.A09",
+                     "task":  10,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-GEN-001",
+                     "clause":  "CR-GEN-001.A10",
+                     "task":  10,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-GEN-001",
+                     "clause":  "CR-GEN-001.A11",
+                     "task":  10,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-IMAGE-001",
+                     "clause":  "CR-IMAGE-001.A01",
+                     "task":  8,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-IMAGE-001",
+                     "clause":  "CR-IMAGE-001.A02",
+                     "task":  8,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-IMAGE-001",
+                     "clause":  "CR-IMAGE-001.A03",
+                     "task":  8,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-IMAGE-002",
+                     "clause":  "CR-IMAGE-002.A01",
+                     "task":  8,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-IMAGE-002",
+                     "clause":  "CR-IMAGE-002.A02",
+                     "task":  8,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-IMAGE-002",
+                     "clause":  "CR-IMAGE-002.A03",
+                     "task":  8,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-INPUT-001",
+                     "clause":  "CR-INPUT-001.A01",
+                     "task":  4,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-INPUT-001",
+                     "clause":  "CR-INPUT-001.A02",
+                     "task":  4,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-INPUT-001",
+                     "clause":  "CR-INPUT-001.A03",
+                     "task":  4,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-INPUT-002",
+                     "clause":  "CR-INPUT-002.A01",
+                     "task":  4,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-INPUT-002",
+                     "clause":  "CR-INPUT-002.A02",
+                     "task":  4,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-INPUT-002",
+                     "clause":  "CR-INPUT-002.A03",
+                     "task":  4,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-LIB-001",
+                     "clause":  "CR-LIB-001.A01",
+                     "task":  8,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-LIB-001",
+                     "clause":  "CR-LIB-001.A02",
+                     "task":  8,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-LIB-001",
+                     "clause":  "CR-LIB-001.A03",
+                     "task":  8,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PANEL-001",
+                     "clause":  "CR-PANEL-001.A01",
+                     "task":  7,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PANEL-001",
+                     "clause":  "CR-PANEL-001.A02",
+                     "task":  7,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PANEL-001",
+                     "clause":  "CR-PANEL-001.A03",
+                     "task":  7,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PANEL-002",
+                     "clause":  "CR-PANEL-002.A01",
+                     "task":  7,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PANEL-002",
+                     "clause":  "CR-PANEL-002.A02",
+                     "task":  7,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PANEL-002",
+                     "clause":  "CR-PANEL-002.A03",
+                     "task":  7,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PERF-001",
+                     "clause":  "CR-PERF-001.A01",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PERF-001",
+                     "clause":  "CR-PERF-001.A02",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PERF-001",
+                     "clause":  "CR-PERF-001.A03",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PERF-001",
+                     "clause":  "CR-PERF-001.A04",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PERF-001",
+                     "clause":  "CR-PERF-001.A05",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PERF-001",
+                     "clause":  "CR-PERF-001.A06",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PERF-001",
+                     "clause":  "CR-PERF-001.A07",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PROD-001",
+                     "clause":  "CR-PROD-001.A01",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PROD-001",
+                     "clause":  "CR-PROD-001.A02",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PROD-001",
+                     "clause":  "CR-PROD-001.A03",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-PROD-001",
+                     "clause":  "CR-PROD-001.A04",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-TEST-001",
+                     "clause":  "CR-TEST-001.A01",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-TEST-001",
+                     "clause":  "CR-TEST-001.A02",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-TEST-001",
+                     "clause":  "CR-TEST-001.A03",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-TEST-001",
+                     "clause":  "CR-TEST-001.A04",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-TEST-001",
+                     "clause":  "CR-TEST-001.A05",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-TEST-001",
+                     "clause":  "CR-TEST-001.A06",
+                     "task":  12,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-THEME-001",
+                     "clause":  "CR-THEME-001.A01",
+                     "task":  1,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-THEME-001",
+                     "clause":  "CR-THEME-001.A02",
+                     "task":  1,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-THEME-001",
+                     "clause":  "CR-THEME-001.A03",
+                     "task":  1,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 },
+                 {
+                     "parentCr":  "CR-THEME-001",
+                     "clause":  "CR-THEME-001.A04",
+                     "task":  1,
+                     "automatedTest":  "mapped in implementation plan",
+                     "manualStep":  "review evidence when applicable",
+                     "environment":  "local plan baseline",
+                     "threshold":  "the observable outcome in the specification clause passes",
+                     "evidence":  [
+
+                                  ],
+                     "gate":  "release",
+                     "status":  "planned"
+                 }
+             ]
+}
