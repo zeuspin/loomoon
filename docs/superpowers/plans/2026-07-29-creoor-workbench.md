@@ -2,859 +2,834 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a standalone, mock-backed Creoor fashion-design Agent workbench in `creoor/` with a Konva infinite canvas, dockable UI panels, semantic theming, image-aware actions, explicit Agent references, and anchored generator forms.
+**Goal:** Build a standalone, mock-backed Creoor fashion-design workbench whose two approved golden paths run end to end on desktop and iPad Safari.
 
-**Architecture:** `react-konva` renders canvas content through a fixed four-layer stage, while React DOM renders panels, menus, forms, and Agent UI. A reducer-backed document store is the source of truth; coordinate adapters bridge canvas and screen space, and a typed in-memory Mock API plus local persistence supplies all server-like behavior.
+**Architecture:** React DOM owns product UI and accessibility; react-konva owns canvas rendering through four fixed layers. `ProjectDocument`, workspace/session state, ephemeral interaction state, metadata persistence, and IndexedDB Blob storage are separate contracts. A single interaction controller arbitrates mouse, touch, and Pencil input, while a typed overlay adapter bridges Canvas, Stage, Client, and DOM portal coordinates.
 
-**Tech Stack:** React 19, TypeScript 5.9, Vite 7, Konva 10, react-konva 19, Vitest 3, Testing Library, `@testing-library/jest-dom`, jsdom, Lucide React/Lucide Animated components, CSS custom properties, localStorage.
+**Tech Stack:** React 19, TypeScript 5.9, Vite 7, Konva 10, react-konva 19, Vitest 3 with V8 coverage, Testing Library, Playwright, axe-core, jsdom, IndexedDB via `idb`, self-hosted Noto Sans SC/Inter WOFF2, CSS custom properties, PostCSS/TypeScript token guards, Motion, Lucide React plus vendored MIT Lucide Animated components.
 
 ## Global Constraints
 
-- Create the frontend under repository-root `creoor/`; do not modify or reuse Loomoon UI implementation files.
+- Create the frontend under repository-root `creoor/`; do not reuse Loomoon UI implementation files.
 - Use Node.js 24+, pnpm 11.9.0, React 19, Konva 10, and react-konva 19.
-- All backend behavior is mocked; do not call a real authentication, AI, image, audio, or video service.
-- Konva renders canvas content only. React DOM renders all panels, menus, inputs, forms, tooltips, and dialogs.
-- React document state is authoritative; never persist `stage.toJSON()` as the product document.
-- Use 3–4 fixed Konva rendering layers. User-visible layers are logical groups inside the content layer.
-- UI components may not contain raw colors, font sizes, shadows, radii, animation durations, or arbitrary `z-index` values; consume theme tokens.
-- Implement the light theme now while preserving semantic token contracts for dark and high-contrast themes.
-- Desktop interactive targets are at least 36px; iPad/touch targets are at least 44px.
-- Support `prefers-reduced-motion` and do not rely on color alone for selection, errors, or generation status.
-- Every task follows test-driven development and ends in a focused commit.
+- Mock-only: no real authentication, AI, image/video generation, microphone request, or user-asset network upload.
+- Konva renders canvas content only; React DOM renders panels, forms, menus, dialogs, Agent UI, and the accessibility mirror.
+- Persist metadata separately from binary assets. Documents store stable `assetId`; Blob data lives in IndexedDB.
+- Only `ProjectDocument` canvas commands enter undo/redo. Layout, hover, selection preview, session switching, and async progress do not.
+- Use four fixed Konva render layers; user-visible layers are a validated logical tree inside the content layer.
+- UI code consumes theme tokens. Raw visual constants are allowed only in primitive token files.
+- Implement light theme now; preserve semantic contracts for dark and high-contrast themes.
+- Desktop targets are at least 36×36 CSS px; coarse-pointer targets are at least 44×44 CSS px.
+- Support reduced motion, WCAG 2.2 AA, keyboard alternatives, iPad safe areas, VisualViewport, and soft keyboards.
+- All browser tests wait for bundled fonts and durable state readiness; no runtime font or icon network requests are allowed.
+- Every task uses TDD, runs its scoped tests plus typecheck, and ends in a focused commit.
+
+## Requirement Traceability
+
+| Requirement | Implementation tasks | Required evidence |
+| --- | --- | --- |
+| CR-PROD-001 | 0, 5, 8, 9, 12 | Both golden paths, signed screenshots and anonymized target-designer usability evidence |
+| CR-DATA-001 | 1, 2, 3, 7, 9, 10 | Entity ownership, project CRUD, persistence and session-switch tests |
+| CR-DATA-002 | 2, 3, 7, 9, 12 | IndexedDB round-trip, recovery, reachability GC, privacy and deletion UI tests |
+| CR-PANEL-001 | 1, 7, 11, 12 | State transitions, four-panel browser behavior and keyboard alternatives |
+| CR-PANEL-002 | 2, 7, 11, 12 | Profile persistence, mixed-input and responsive-device tests |
+| CR-THEME-001 | 0, 1, 7, 11, 12 | Signed visual contract, local fonts, token graph, computed styles and screenshots |
+| CR-CANVAS-001 | 3, 4, 6, 10, 11 | Tree invariants, coordinates, renderer integration and DOM mirror |
+| CR-CANVAS-002 | 3, 4, 5, 6, 10 | Authoring, history, selection, alignment and generator editing tests |
+| CR-CANVAS-003 | 6, 10 | Snap tables, minimap, zoom/grid/shortcut and generator snapping tests |
+| CR-INPUT-001 | 4, 11, 12 | Pointer/wheel arbitration, mixed-device and browser tests |
+| CR-INPUT-002 | 4, 12 | Synthetic controller tests plus real iPad/Pencil evidence |
+| CR-IMAGE-001 | 5 | Import/recognition/tag-correction tests |
+| CR-IMAGE-002 | 8, 9 | Capability contract, direct action and Agent-gated non-destructive action E2E |
+| CR-AGENT-001 | 1, 3, 9 | Session CRUD, explicit payload isolation and clarification-gating tests |
+| CR-AGENT-002 | 2, 3, 9 | Live/frozen/region refresh, deletion choice and reachable-asset tests |
+| CR-LIB-001 | 2, 3, 8 | History/library persistence, reachability and provenance tests |
+| CR-GEN-001 | 3, 10 | Full transition table and stale-event tests |
+| CR-EXPORT-001 | 5, 8, 9, 12 | Selection/whole-work/annotation exports and real-browser CORS evidence |
+| CR-A11Y-001 | 6, 7, 9, 10, 11, 12 | Canvas mirror, keyboard, focus, computed contrast and WCAG-tagged axe evidence |
+| CR-PERF-001 | 12 | Recorded performance benchmark |
+| CR-TEST-001 | 0, 1, 11, 12, 13 | Atomic trace gate, test runtimes, axe, three-browser, signed visual and device evidence |
 
 ---
 
-## Planned File Structure
+## Task 0: Freeze Acceptance and Visual Evidence Before Code
 
-```text
-creoor/
-  index.html                         # Vite entry document
-  package.json                       # Creoor scripts and dependencies
-  tsconfig.json                      # Strict TypeScript configuration
-  vite.config.ts                     # React/Vitest/jsdom configuration
-  src/
-    main.tsx                         # React root
-    app/CreoorApp.tsx                # Workbench composition
-    app/app.css                      # Layout using semantic tokens only
-    theme/primitives.css             # Raw primitive values; only permitted raw visual values
-    theme/semantic.css               # Semantic aliases and light theme
-    theme/components.css             # Component and state token aliases
-    theme/token-contract.ts          # Typed token names for Konva and JS animation use
-    theme/token-guard.test.ts         # Prevent raw visual constants outside theme files
-    domain/types.ts                  # Canvas, panel, image, Agent, generator domain types
-    domain/document-reducer.ts       # Pure document mutations and history
-    domain/document-reducer.test.ts  # Reducer/history tests
-    data/fixtures.ts                 # Fashion-specific mock records
-    data/mock-api.ts                 # Typed delayed/failing mock service
-    data/mock-api.test.ts            # Mock lifecycle tests
-    data/persistence.ts              # Versioned localStorage adapter
-    data/persistence.test.ts         # Migration and recovery tests
-    canvas/CanvasStage.tsx           # Konva Stage and fixed layers
-    canvas/coordinates.ts            # Screen/canvas transforms
-    canvas/coordinates.test.ts       # Zoom-safe transform tests
-    canvas/gestures.ts               # Wheel, touch, and pen normalization
-    canvas/gestures.test.ts           # Pointer and pinch tests
-    canvas/SelectionOverlay.tsx       # Transformer, box selection, guides
-    canvas/snapping.ts               # Grid/object/rotation snap calculations
-    canvas/snapping.test.ts           # Snap threshold tests
-    canvas/LogicalLayerRenderer.tsx   # Render logical layer tree
-    canvas/GeneratorNode.tsx          # Konva generator placeholder/result
-    panels/DockablePanel.tsx          # Shared docking/floating/collapse shell
-    panels/panel-layout.ts            # Panel placement and collision logic
-    panels/panel-layout.test.ts       # Dock, clamp, and restore tests
-    panels/UserProjectPanel.tsx       # User/project card
-    panels/CanvasUtilityPanel.tsx     # Minimap/grid/layers/shortcuts/zoom
-    panels/AgentPanel.tsx             # Conversation/session container
-    tools/ToolRail.tsx                # Compact/expanded tool rail
-    tools/BrushPopover.tsx             # Brush secondary panel
-    tools/tool-registry.ts             # Tool metadata and shortcuts
-    images/image-capabilities.ts       # Tag-to-action registry and intersections
-    images/image-capabilities.test.ts  # Single/multi-selection action tests
-    images/ImageActionMenu.tsx         # Contextual action menu
-    images/LibraryPanel.tsx            # History/private/public fashion libraries
-    agent/references.ts                # Stable @ reference parsing/resolution
-    agent/references.test.ts           # Rename/delete/local-region tests
-    agent/ReferenceTray.tsx            # Input reference thumbnails
-    agent/AgentComposer.tsx            # Prompt, skills, voice mock, @ picker
-    agent/ConversationList.tsx         # Mock clarification/result flow
-    generators/GeneratorForm.tsx       # Anchored DOM form
-    generators/anchor-placement.ts     # Flip/clamp anchor placement
-    generators/anchor-placement.test.ts# Viewport placement tests
-    generators/generator-state.ts      # Generator state machine
-    generators/generator-state.test.ts # Queue/fail/retry/cancel tests
-    test/setup.ts                       # jsdom setup and browser API stubs
-    test/render-app.tsx                 # Shared render helper
+**Files:**
+- Create: `docs/development/creoor-acceptance.md`
+- Create: `docs/development/creoor-acceptance.json`
+- Create: `docs/development/creoor-performance-environment.md`
+- Create: `docs/development/creoor-usability-protocol.md`
+- Create: `docs/design/creoor-visual-baseline.md`
+- Create: `docs/design/creoor-visual-approval-manifest.json`
+- Create: `docs/governance/creoor-approval-policy.md`
+- Create: `scripts/check-creoor-acceptance.mjs`
+- Create: `scripts/check-creoor-acceptance.test.mjs`
+
+**Interfaces:**
+- Produces: parent/atomic requirement matrix, release/waiver policy, evidence directories, fixed environments and viewports, usability protocol, fixture names, visual approval workflow and borrow/do-not-copy rules.
+- Consumes: `docs/superpowers/specs/2026-07-28-creoor-workbench-design.md`.
+
+- [ ] **Step 1: Create the acceptance matrix with all 21 parent IDs and every atomic clause**
+
+Use `creoor-acceptance.json` as the machine-readable source and generate the Markdown summary from it. Each row contains `parentCr`, unique `clause`, `task`, `automatedTest`, `manualStep`, `environment`, one `threshold`, `evidence[]` with content SHA-256, `gate`, `status`, and optional `waiverReceipt`. `Gate` is `release | waivable`; `Status` is `planned | passed | failed | waived`. Populate every parent and clause from §16; status starts `planned`, never blank. Parent rows are generated summaries only.
+
+Mark the two golden paths, data loss/recovery, explicit Agent isolation, three-browser golden paths, WCAG, real iPad/Pencil and performance thresholds as `release`. A waiver is legal only for a clause marked `waivable` before Task 1 and must contain the fields and approvals in specification §15.2.
+
+- [ ] **Step 2: Record the visual baseline contract**
+
+Document the approved warm neutral palette, selected Noto Sans SC/Inter distribution versions, official source/license URLs and expected upstream checksums, panel radii, Miora-inspired spatial traits, forbidden copying, deterministic fixture names, and fixed viewports 1280×720, 1440×900, 1920×1080, 1194×834, 1366×1024. Task 0 approves the font selection contract, not files that do not exist yet. Task 1 must land those exact assets, verify their bytes against the frozen checksums and then record committed-file hashes. Freeze the rule that the first implementation is not automatically an approved screenshot baseline.
+
+The visual manifest schema records fixture/version hash, font hashes, Chromium/OS/container version, viewport, masks, screenshot SHA-256 and a signed approval receipt. Baseline creation or update is rejected without product-owner approval; a plaintext approver name is never sufficient.
+
+- [ ] **Step 3: Freeze usability and performance environments**
+
+Copy specification §15.1 into a moderator protocol. Record the actual desktop benchmark hardware and Chromium build, plus the exact two iPad models, iPadOS/Safari builds, Pencil models, display zoom and access plan. Performance/iPad clauses cannot pass with blank or substituted environment fields. Do not collect participant identity or assets.
+
+- [ ] **Step 4: Implement the acceptance and approval verifier**
+
+`check-creoor-acceptance.mjs` supports `--phase=plan` and `--phase=release`. Both phases parse the specification and JSON source, require exactly 21 unique parent IDs, identical unique atomic-clause sets, one row per clause, legal gate/status combinations, non-empty fields and valid task mappings. Release additionally requires every release clause passed, every evidence path present with matching SHA-256, all waivers unexpired and complete, and all visual/waiver receipts cryptographically valid.
+
+Approval identity comes from protected CI variables `CREOOR_BASELINE_COMMIT` and `CREOOR_APPROVER_PUBLIC_KEYS`, not editable repository text. Release mode verifies the Task 0 baseline commit is an ancestor, its acceptance gate classifications are unchanged, and Ed25519 receipt signatures match an allowed product/technical key. If protected variables or a valid receipt are absent, release mode fails; local development may use plan mode but cannot claim release acceptance. Document repository-owner setup and key rotation in the governance policy.
+
+Test duplicate/missing parents, duplicate/missing clauses, empty thresholds, missing/hash-mismatched evidence, illegal `release+waived`, post-baseline gate downgrade, expired/incomplete waiver, unknown signer, bad signature and changed visual manifest. Run: `node --test scripts/check-creoor-acceptance.test.mjs && node scripts/check-creoor-acceptance.mjs --phase=plan`.
+
+- [ ] **Step 5: Obtain baseline-contract approval and commit**
+
+Product owner approves the acceptance schema, visual/font-source contract and recorded environments. Committed font-file hashes are verified in Task 1; candidate implementation screenshots remain unsigned until Task 12.
+
+```bash
+git add docs/development/creoor-acceptance.md docs/development/creoor-acceptance.json docs/development/creoor-performance-environment.md docs/development/creoor-usability-protocol.md docs/design/creoor-visual-baseline.md docs/design/creoor-visual-approval-manifest.json docs/governance/creoor-approval-policy.md scripts/check-creoor-acceptance.mjs scripts/check-creoor-acceptance.test.mjs
+git commit -m "docs(creoor): establish acceptance baseline"
 ```
 
-## Task 1: Scaffold Creoor and Enforce the Theme Contract
+Repository owner then pins that exact commit as protected `CREOOR_BASELINE_COMMIT`, configures allowed approver public keys, and reruns plan mode in protected CI. Task 1 must not start until the protected run succeeds.
+
+## Task 1: Scaffold Creoor, Core Contracts, Theme Governance, and Test Runtimes
 
 **Files:**
 - Modify: `pnpm-workspace.yaml`
 - Create: `creoor/package.json`
 - Create: `creoor/tsconfig.json`
 - Create: `creoor/vite.config.ts`
+- Create: `creoor/vitest.config.ts`
+- Create: `creoor/playwright.config.ts`
 - Create: `creoor/index.html`
 - Create: `creoor/src/main.tsx`
 - Create: `creoor/src/app/CreoorApp.tsx`
+- Create: `creoor/src/app/CreoorApp.test.tsx`
 - Create: `creoor/src/app/app.css`
+- Create: `creoor/src/assets/fonts/NotoSansSC-Variable.woff2`
+- Create: `creoor/src/assets/fonts/Inter-Variable.woff2`
+- Create: `creoor/src/assets/fonts/NotoSansSC-OFL.txt`
+- Create: `creoor/src/assets/fonts/Inter-OFL.txt`
+- Create: `creoor/src/contracts/types.ts`
 - Create: `creoor/src/theme/primitives.css`
 - Create: `creoor/src/theme/semantic.css`
 - Create: `creoor/src/theme/components.css`
 - Create: `creoor/src/theme/token-contract.ts`
-- Create: `creoor/src/theme/token-guard.test.ts`
+- Create: `creoor/scripts/check-theme-tokens.mjs`
+- Create: `creoor/scripts/check-critical-coverage.mjs`
+- Create: `creoor/scripts/check-critical-coverage.test.mjs`
+- Create: `creoor/src/theme/token-contract.test.ts`
+- Create: `creoor/src/theme/font-contract.test.ts`
 - Create: `creoor/src/test/setup.ts`
+- Create: `creoor/src/test/font-readiness.ts`
+- Create: `creoor/e2e/smoke.spec.ts`
+- Modify: `docs/design/creoor-visual-approval-manifest.json`
 
 **Interfaces:**
-- Produces: CSS variables such as `--surface-canvas`, `--panel-floating-bg`, `--text-primary`, `--space-3`, `--radius-panel`, `--motion-panel-ms`, plus `canvasTheme(): CanvasTheme` for Konva-only values.
-- Consumes: nothing.
+- Produces: exact domain IDs/enums, orthogonal `PanelState`, coordinate branded types, generator events, image/reference types, CSS token graph, Vitest and Playwright runtimes.
+- Consumes: Task 0 visual and acceptance contracts.
 
-- [ ] **Step 1: Write the failing theme guard test**
+- [ ] **Step 1: Create the minimal package and test configuration**
+
+Add `creoor` to the workspace. Include `@vitejs/plugin-react`, React/Konva, `idb`, `lucide-react`, `motion`, Vitest, `@vitest/coverage-v8`, Testing Library, `fake-indexeddb`, `vitest-canvas-mock`, `@playwright/test`, `@axe-core/playwright`, `axe-core`, `jest-axe`, PostCSS, TypeScript and `@types/node`. Add scripts `dev`, `test`, `test:e2e`, `test:visual`, `test:coverage`, `coverage:check-critical`, `acceptance:plan`, `acceptance:check`, `tokens:check`, `typecheck`, and `build`; `test:coverage` runs `vitest run --coverage` with the V8 provider, and acceptance scripts call the Task 0 verifier in plan/release mode.
+
+Configure global branches/functions/lines/statements thresholds at 80%. `check-critical-coverage.mjs` reads the JSON coverage report and requires each exact path below to exist in the repository, appear in the report, and have branch coverage ≥90%; an empty or wrong glob is a failure:
+
+- `src/canvas/coordinates.ts`
+- `src/canvas/snapping.ts`
+- `src/panels/panel-layout.ts`
+- `src/agent/reference-model.ts`
+- `src/agent/context-builder.ts`
+- `src/storage/metadata-store.ts`
+- `src/storage/asset-store.ts`
+- `src/generators/generator-machine.ts`
+
+Unit-test the checker against a missing path, a missing coverage entry, 89.99% and 90%. `coverage:check-critical` runs after `test:coverage` once all target files exist; Task 1 runs only its checker fixture tests. Any threshold failure returns non-zero, not merely a report.
+
+- [ ] **Step 2: Write failing contract tests**
 
 ```ts
-// creoor/src/theme/token-guard.test.ts
-import { describe, expect, it } from "vitest";
-import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
-
-function files(root: string): string[] {
-  return readdirSync(root).flatMap((name) => {
-    const path = join(root, name);
-    return statSync(path).isDirectory() ? files(path) : [path];
-  });
-}
-
-describe("visual token contract", () => {
-  it("keeps raw visual values inside theme files", () => {
-    const src = join(process.cwd(), "src");
-    const offenders = files(src)
-      .filter((path) => /\.(css|tsx)$/.test(path))
-      .filter((path) => !path.includes(`${join("src", "theme")}`))
-      .filter((path) => /#[0-9a-f]{3,8}\b|rgba?\(|shadow:\s|z-index:\s*\d+/i.test(readFileSync(path, "utf8")))
-      .map((path) => relative(process.cwd(), path));
-    expect(offenders).toEqual([]);
+it("does not serialize transient panel state", () => {
+  const panel: PanelState = {
+    placement: { kind: "docked", edge: "left", offset: 80, size: 320 },
+    visibility: "peek",
+    persistence: "auto",
+    interaction: {
+      kind: "dragging",
+      origin: { kind: "floating", x: 0, y: 80, width: 320, height: 500 },
+    },
+  };
+  expect(serializePanelState(panel)).toEqual({
+    placement: panel.placement,
+    visibility: "collapsed",
+    persistence: "auto",
   });
 });
 ```
 
-- [ ] **Step 2: Run the test to verify scaffolding is missing**
+Define `ProjectId`, `AssetId`, `NodeId`, `SessionId`, `ReferenceId`, `RequestId`, `CanvasPoint`, `StageLocalPoint`, `ClientPoint`, `OverlayPoint`, `ToolId`, `GeneratorStatus`, `PanelState`, `ProjectDocument`, `WorkspaceState`, `SessionState`, and `EphemeralInteractionState` in this task.
 
-Run: `pnpm --dir creoor test src/theme/token-guard.test.ts`
+Also test that the app shell mounts its Stage/overlay hosts, displays the local-only disclosure, and has no network font/icon requests. Exclude pure type declarations, test setup and the `main.tsx` bootstrap from coverage rather than lowering thresholds.
 
-Expected: FAIL because `creoor/package.json` does not exist.
+- [ ] **Step 3: Run the red test**
 
-- [ ] **Step 3: Create the Vite package and test configuration**
+Run: `pnpm --dir creoor test src/theme/token-contract.test.ts`
 
-Add `creoor` to `pnpm-workspace.yaml` and create this package contract:
+Expected: FAIL because serialization and tokens are not implemented.
 
-```json
-{
-  "name": "@creoor/web",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit",
-    "build": "tsc --noEmit && vite build"
-  },
-  "dependencies": {
-    "konva": "^10.0.0",
-    "lucide-react": "^0.468.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-konva": "^19.0.0"
-  },
-  "devDependencies": {
-    "@testing-library/jest-dom": "^6.0.0",
-    "@testing-library/react": "^16.0.0",
-    "@testing-library/user-event": "^14.0.0",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "jsdom": "^26.0.0",
-    "typescript": "^5.9.0",
-    "vite": "^7.0.0",
-    "vitest-canvas-mock": "^0.3.3",
-    "vitest": "^3.2.0"
-  }
-}
-```
+- [ ] **Step 4: Implement theme files, deterministic fonts, and typed Konva accessors**
 
-Configure Vitest with `environment: "jsdom"` and `setupFiles: ["./src/test/setup.ts"]`. The setup file must contain:
+Only `primitives.css` contains raw values. Obtain the exact Task 0-approved font distributions, verify their bytes and licenses against the frozen upstream checksums, commit them, and record committed-file SHA-256 values in the visual manifest. Define local `@font-face` rules and use them through font-family tokens; no runtime font network request is allowed. Semantic aliases reference primitives; component/state aliases reference semantic/component values. `canvasTheme()` uses unitless numeric tokens and throws in development when a required token is missing.
 
-```ts
-import "@testing-library/jest-dom/vitest";
-import "vitest-canvas-mock";
+`font-contract.test.ts` waits for `document.fonts.ready`, asserts both required faces pass `document.fonts.check()`, verifies representative Chinese and Latin controls resolve to the expected family, and fails if a font asset or license file is missing.
 
-class ResizeObserverStub {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
+- [ ] **Step 5: Implement AST-based theme guard**
 
-globalThis.ResizeObserver = ResizeObserverStub;
-```
+The checker parses CSS with PostCSS and TS/TSX with the TypeScript compiler API. It rejects raw colors in any syntax, raw font-size/radius/shadow/blur/duration/z-index outside primitives, inline visual constants, and Konva raw `fill`/`stroke`. Include negative fixtures proving every prohibited class fails.
 
-- [ ] **Step 4: Implement four-level tokens and the typed Konva bridge**
+- [ ] **Step 6: Add browser smoke**
 
-```ts
-// creoor/src/theme/token-contract.ts
-export interface CanvasTheme {
-  canvasBackground: string;
-  gridDot: string;
-  selection: string;
-  guide: string;
-  danger: string;
-  snapDistancePx: number;
-}
+Install browser binaries explicitly with `pnpm --dir creoor exec playwright install chromium firefox webkit`; CI Linux uses the equivalent `--with-deps` bootstrap. Playwright starts Vite, waits for `document.fonts.ready` plus application readiness, and checks Chromium, Firefox and WebKit load the shell with zero page errors, console errors or font-network requests.
 
-export function canvasTheme(): CanvasTheme {
-  const css = getComputedStyle(document.documentElement);
-  return {
-    canvasBackground: css.getPropertyValue("--surface-canvas").trim(),
-    gridDot: css.getPropertyValue("--canvas-grid-dot").trim(),
-    selection: css.getPropertyValue("--border-selection").trim(),
-    guide: css.getPropertyValue("--border-guide").trim(),
-    danger: css.getPropertyValue("--status-danger").trim(),
-    snapDistancePx: Number(css.getPropertyValue("--canvas-snap-distance")) || 6,
-  };
-}
-```
+- [ ] **Step 7: Verify and commit**
 
-Only `primitives.css` contains raw values. `semantic.css` aliases primitives, and `components.css` aliases semantic roles for docked/floating/collapsed/active states.
-
-- [ ] **Step 5: Render the empty themed workbench shell**
-
-Implement `CreoorApp` with a full viewport canvas region and four empty panel slots. Import all theme styles from `main.tsx`.
-
-- [ ] **Step 6: Run validation**
-
-Run: `pnpm install && pnpm --dir creoor test && pnpm --dir creoor typecheck && pnpm --dir creoor build`
-
-Expected: all commands PASS.
-
-- [ ] **Step 7: Commit**
+Run: `pnpm install && pnpm --dir creoor exec playwright install chromium firefox webkit && pnpm --dir creoor test && pnpm --dir creoor test:coverage && pnpm --dir creoor tokens:check && pnpm --dir creoor typecheck && pnpm --dir creoor build && pnpm --dir creoor test:e2e --grep smoke`
 
 ```bash
-git add pnpm-workspace.yaml pnpm-lock.yaml creoor
-git commit -m "feat(creoor): scaffold themed workbench"
+git add pnpm-workspace.yaml pnpm-lock.yaml creoor docs/design/creoor-visual-approval-manifest.json
+git commit -m "feat(creoor): scaffold contracts theme and test runtimes"
 ```
 
-## Task 2: Define the Document Store, Mock API, and Persistence
+## Task 2: Implement Asset Blob Storage and Versioned Metadata Persistence
 
 **Files:**
-- Create: `creoor/src/domain/types.ts`
-- Create: `creoor/src/domain/document-reducer.ts`
-- Create: `creoor/src/domain/document-reducer.test.ts`
-- Create: `creoor/src/data/fixtures.ts`
-- Create: `creoor/src/data/mock-api.ts`
-- Create: `creoor/src/data/mock-api.test.ts`
-- Create: `creoor/src/data/persistence.ts`
-- Create: `creoor/src/data/persistence.test.ts`
-- Modify: `creoor/src/app/CreoorApp.tsx`
+- Create: `creoor/src/storage/asset-store.ts`
+- Create: `creoor/src/storage/asset-store.test.ts`
+- Create: `creoor/src/storage/asset-reachability.ts`
+- Create: `creoor/src/storage/asset-reachability.test.ts`
+- Create: `creoor/src/storage/metadata-store.ts`
+- Create: `creoor/src/storage/metadata-store.test.ts`
+- Create: `creoor/src/storage/schema.ts`
+- Create: `creoor/src/storage/migrations.ts`
+- Create: `creoor/src/storage/save-status.tsx`
 
 **Interfaces:**
-- Produces: `CreoorDocument`, `CanvasNode`, `LogicalLayer`, `PanelLayout`, `AgentSession`, `GeneratorRecord`, `documentReducer(state, action)`, `mockApi`, and `loadDocument()/saveDocument()`.
-- Consumes: theme-independent TypeScript only.
+- Produces: `putAsset(blob, metadata): Promise<AssetId>`, `getAsset(id)`, `computeReachableAssetIds(metadata, volatileAssetIds)`, `collectGarbage(reachableAssetIds)`, `loadWorkspace()`, `saveWorkspace()`, `flushWorkspace()`, migration and quota errors. Manual retain/release counters are not authoritative.
+- Consumes: IDs and persistence DTOs from Task 1.
 
-- [ ] **Step 1: Write reducer tests for add, reorder, undo, and redo**
+- [ ] **Step 1: Write IndexedDB round-trip and GC tests**
 
-```ts
-it("reorders logical layers and restores the order with undo", () => {
-  const initial = fixtureDocument(["layer-a", "layer-b"]);
-  const changed = documentReducer(initial, { type: "layer/reorder", id: "layer-b", toIndex: 0 });
-  expect(changed.present.layerOrder).toEqual(["layer-b", "layer-a"]);
-  const undone = documentReducer(changed, { type: "history/undo" });
-  expect(undone.present.layerOrder).toEqual(["layer-a", "layer-b"]);
-});
+Use `fake-indexeddb`. Store a 12 MB Blob and reload it through a new store instance. Reference the same `assetId` from two projects, a private-library item, a creation-history item and a session snapshot. Assert GC retains it while any persisted or supplied volatile reference remains and deletes it only after the final reference disappears. Unknown or missing assets must not corrupt metadata loading.
+
+- [ ] **Step 2: Write persistence failure tests**
+
+Cover v0→v1 migration, unknown future version, malformed JSON backup, missing field, `QuotaExceededError`, storage disabled, 100 rapid writes, and `pagehide` flush. Assert the last valid document is never overwritten by a failed write.
+
+- [ ] **Step 3: Run red tests**
+
+Run: `pnpm --dir creoor test src/storage`
+
+Expected: FAIL because stores are missing.
+
+- [ ] **Step 4: Implement stores and visible save status**
+
+Use project-specific metadata keys and a project index. Debounce by 250ms, flush on visibility/pagehide, expose `saving/saved/failed`, and back up corrupted payloads before recovery. Object URLs are revoked after image disposal.
+
+Asset creation is two-phase: persist Blob first, then commit metadata. A failed metadata commit may leave an orphan but must not delete previously reachable assets; startup reconciliation may collect the orphan. Deletion commits metadata first and runs GC only after that commit succeeds.
+
+- [ ] **Step 5: Implement deletion contracts**
+
+Support delete-project metadata and clear-all-local-data primitives. Compute reachability across every project document, session reference snapshot, project creation-history item, private-library item and supplied volatile history asset IDs. Never GC from local counters alone; Task 7 provides the visible destructive-action UI.
+
+- [ ] **Step 6: Verify and commit**
+
+Run: `pnpm --dir creoor test src/storage && pnpm --dir creoor typecheck`
+
+```bash
+git add creoor/src/storage
+git commit -m "feat(creoor): add durable local asset storage"
 ```
 
-- [ ] **Step 2: Run reducer tests and verify failure**
+## Task 3: Implement Project Document Tree, History, Sessions, and Async Task Contracts
 
-Run: `pnpm --dir creoor test src/domain/document-reducer.test.ts`
+**Files:**
+- Create: `creoor/src/domain/document-tree.ts`
+- Create: `creoor/src/domain/document-tree.test.ts`
+- Create: `creoor/src/domain/history.ts`
+- Create: `creoor/src/domain/history.test.ts`
+- Create: `creoor/src/domain/history-assets.ts`
+- Create: `creoor/src/domain/history-assets.test.ts`
+- Create: `creoor/src/domain/project-reducer.ts`
+- Create: `creoor/src/domain/project-reducer.test.ts`
+- Create: `creoor/src/data/fixtures.ts`
+- Create: `creoor/src/data/mock-task-runner.ts`
+- Create: `creoor/src/data/mock-task-runner.test.ts`
 
-Expected: FAIL because the reducer is missing.
+**Interfaces:**
+- Produces: validated `parentId/childIds` tree, `HistoryState<ProjectDocument>`, transactional commands, project/session fixtures, cancellable `MockTaskHandle` with `requestId`.
+- Consumes: Task 1 contracts and Task 2 asset IDs.
 
-- [ ] **Step 3: Implement normalized domain types and bounded history**
+- [ ] **Step 1: Write tree invariant tests**
 
-Use node maps plus ordered ID arrays. Store canvas coordinates, not screen coordinates. Limit undo history to 100 snapshots and exclude ephemeral hover/drag preview state.
+Test unique IDs, one parent, ordered children, cycle rejection, inherited hidden/locked state, and group/ungroup preserving world transform through three nested levels.
 
-- [ ] **Step 4: Write Mock API lifecycle tests**
+- [ ] **Step 2: Write history transaction tests**
 
-```ts
-it("emits queued, generating, and completed generator states", async () => {
-  const states: string[] = [];
-  await mockApi.runGenerator("generator-1", (state) => states.push(state.status), { delayMs: 1 });
-  expect(states).toEqual(["queued", "generating", "completed"]);
-});
-```
+Assert 300 drag frames commit one history entry; text edit commits once on blur/confirm; new commands clear redo; only 100 history entries remain; layout, hover, selection preview, session switch, and generator progress never enter history.
 
-- [ ] **Step 5: Implement fixtures and typed Mock API**
+Expose `assetIdsInHistory(history)` over `past`, `present` and `future`. Undoing a node must not make its Blob collectible while redo still references it. Once redo is cleared or bounded history evicts the final reference, that asset may become collectible.
 
-Provide two Agent sessions, fashion images covering every tag family, seven library categories, public/private sources, generator success/failure/partial fixtures, and deterministic `delayMs`/`fail` options for tests.
+- [ ] **Step 3: Write async race tests with fake timers**
 
-- [ ] **Step 6: Write persistence recovery tests**
+Cancel prevents completed; retry ignores the old request; deleting a generator ignores late events; StrictMode-style duplicate start is idempotent; all timers are cleared after unmount.
 
-Test valid versioned data, malformed JSON fallback, and panel positions clamped after viewport changes.
+- [ ] **Step 4: Implement minimal reducers and fixtures**
 
-- [ ] **Step 7: Implement versioned local persistence**
+Provide two projects, multiple CRUD-capable sessions, fashion assets for every tag family, seven libraries, partial/failure generator fixtures, provenance and license fields. The application-level GC coordinator unions persisted reachability from Task 2 with `assetIdsInHistory()` before invoking `collectGarbage()`.
 
-Use key `creoor.document.v1`. Save only durable document/layout data, debounce saves by 250ms, and recover to fixtures on invalid data without throwing from render.
-
-- [ ] **Step 8: Run and commit**
+- [ ] **Step 5: Verify and commit**
 
 Run: `pnpm --dir creoor test src/domain src/data && pnpm --dir creoor typecheck`
 
-Expected: PASS.
-
 ```bash
-git add creoor/src/domain creoor/src/data creoor/src/app/CreoorApp.tsx
-git commit -m "feat(creoor): add document store and mock data"
+git add creoor/src/domain creoor/src/data
+git commit -m "feat(creoor): add document history and task contracts"
 ```
 
-## Task 3: Build the Konva Stage, Coordinates, and Input Gestures
+## Task 4: Build Coordinate Adapters, Interaction Controller, and Konva Stage
 
 **Files:**
 - Create: `creoor/src/canvas/coordinates.ts`
 - Create: `creoor/src/canvas/coordinates.test.ts`
-- Create: `creoor/src/canvas/gestures.ts`
-- Create: `creoor/src/canvas/gestures.test.ts`
+- Create: `creoor/src/canvas/interaction-controller.ts`
+- Create: `creoor/src/canvas/interaction-controller.test.ts`
+- Create: `creoor/src/canvas/wheel-normalizer.ts`
+- Create: `creoor/src/canvas/wheel-normalizer.test.ts`
 - Create: `creoor/src/canvas/CanvasStage.tsx`
-- Create: `creoor/src/canvas/LogicalLayerRenderer.tsx`
+- Create: `creoor/src/canvas/LogicalTreeRenderer.tsx`
+- Create: `creoor/src/canvas/OverlayRoot.tsx`
+- Create: `creoor/e2e/canvas-input.spec.ts`
 - Modify: `creoor/src/app/CreoorApp.tsx`
 
 **Interfaces:**
-- Produces: `ViewportTransform`, `canvasToScreen(point, viewport)`, `screenToCanvas(point, viewport)`, `zoomAtPointer(viewport, pointer, factor)`, and `<CanvasStage document dispatch />`.
-- Consumes: `CreoorDocument`, `CanvasNode`, `canvasTheme()`.
+- Produces: typed coordinate conversions, `nodeClientRect()`, one-owner pointer sequences, four-layer Stage, shared DOM overlay root.
+- Consumes: Task 1 coordinate/tool contracts and Task 3 document tree.
 
-- [ ] **Step 1: Write coordinate round-trip and pointer-centered zoom tests**
+- [ ] **Step 1: Write coordinate tests**
 
-```ts
-it("preserves the canvas point beneath the pointer while zooming", () => {
-  const viewport = { x: 100, y: 50, scale: 1 };
-  const pointer = { x: 400, y: 300 };
-  const before = screenToCanvas(pointer, viewport);
-  const next = zoomAtPointer(viewport, pointer, 2);
-  expect(screenToCanvas(pointer, next)).toEqual(before);
-});
-```
+Cover round trips at scale 0.1/1/4, pointer-centered zoom, non-zero Stage rect, page scroll, rotated node bounds, VisualViewport offset, soft keyboard and safe-area. Maximum round-trip error is 0.01 canvas unit.
 
-- [ ] **Step 2: Run tests and verify failure**
+- [ ] **Step 2: Write the full input matrix tests**
 
-Run: `pnpm --dir creoor test src/canvas/coordinates.test.ts`
+Table-drive select/hand/brush/lasso × mouse/single-touch/two-touch/Pencil. Also cover mouse-wheel zoom, trackpad wheel, `ctrlKey` pinch-wheel, `deltaMode` pixel/line/page normalization, pointer-centered zoom, space/middle-button pan, horizontal DOM-panel scrolling, input suppression, second pointer join/leave, pointer capture, cancel, blur and one-owner-only behavior.
 
-Expected: FAIL because coordinate functions are missing.
+- [ ] **Step 3: Implement adapters and controller**
 
-- [ ] **Step 3: Implement pure coordinate and zoom helpers**
+Use a single native pointer boundary around Stage; Konva handlers may report hit targets but cannot start a parallel gesture state machine. Attach a non-passive wheel listener only to the canvas interaction surface. Normalize deltas before bounded exponential zoom, preserve the canvas point beneath the client pointer, and call `preventDefault()` only when the canvas owns the wheel sequence. DOM inputs, menus and scrollable panels retain native scrolling. Use `touch-action: none` only on the canvas interaction surface.
 
-Clamp scale to `0.1–4`. Keep all snapping thresholds in screen pixels and convert them to canvas units with `threshold / scale`.
+- [ ] **Step 4: Render fixed layers and overlay root**
 
-- [ ] **Step 4: Write gesture normalization tests**
+Render background, content, interaction and temporary Layers. Background is non-listening. Update DOM overlays through ResizeObserver + VisualViewport + rAF, at most one write per frame.
 
-Test wheel zoom, one-finger pan, two-finger midpoint/distance, Pencil pointer metadata, and refusal to pan while the pen tool is active.
+- [ ] **Step 5: Run browser input smoke and commit**
 
-- [ ] **Step 5: Implement the fixed layer stage**
-
-Render background, content, interaction, and temporary Konva Layers. Set `listening={false}` on the background layer. Render fixture image/text/stroke nodes through `LogicalLayerRenderer`.
-
-- [ ] **Step 6: Connect wheel, touch, and pointer events**
-
-Use Konva touch events for pinch/pan and native `pointerdown/move/up` on the Stage container for `pointerType === "pen"`, pressure, tiltX, and tiltY.
-
-- [ ] **Step 7: Run and commit**
-
-Run: `pnpm --dir creoor test src/canvas/coordinates.test.ts src/canvas/gestures.test.ts && pnpm --dir creoor typecheck`
-
-Expected: PASS.
+Run: `pnpm --dir creoor test src/canvas/coordinates.test.ts src/canvas/interaction-controller.test.ts src/canvas/wheel-normalizer.test.ts && pnpm --dir creoor test:e2e e2e/canvas-input.spec.ts && pnpm --dir creoor typecheck`
 
 ```bash
-git add creoor/src/canvas creoor/src/app/CreoorApp.tsx
-git commit -m "feat(creoor): add Konva infinite canvas"
+git add creoor/src/canvas creoor/e2e/canvas-input.spec.ts creoor/src/app/CreoorApp.tsx
+git commit -m "feat(creoor): add canvas coordinates and input arbitration"
 ```
 
-## Task 4: Add Selection, Snapping, Logical Layers, and Alignment
+## Task 5: Implement Image Import, Recognition, Text, Brush, Lasso, and Export Foundations
+
+**Files:**
+- Create: `creoor/src/assets/image-import.ts`
+- Create: `creoor/src/assets/image-import.test.ts`
+- Create: `creoor/src/assets/recognition.ts`
+- Create: `creoor/src/assets/recognition.test.ts`
+- Create: `creoor/src/canvas/authoring.ts`
+- Create: `creoor/src/canvas/authoring.test.ts`
+- Create: `creoor/src/canvas/CanvasExportService.ts`
+- Create: `creoor/src/canvas/CanvasExportService.test.ts`
+- Create: `creoor/src/components/RecognitionBadge.tsx`
+- Create: `creoor/e2e/fixtures/cors-image-server.ts`
+- Create: `creoor/e2e/import-authoring-export.spec.ts`
+- Modify: `creoor/src/app/CreoorApp.tsx`
+- Modify: `creoor/src/canvas/CanvasStage.tsx`
+- Modify: `creoor/src/canvas/LogicalTreeRenderer.tsx`
+- Modify: `creoor/src/domain/project-reducer.ts`
+- Modify: `creoor/src/domain/project-reducer.test.ts`
+- Modify: `creoor/src/storage/metadata-store.ts`
+
+**Interfaces:**
+- Produces: imported image assets/nodes, Mock recognition lifecycle and editable tags, text/stroke/lasso commands, CORS-safe PNG export.
+- Consumes: Tasks 2–4.
+
+- [ ] **Step 1: Write import and recognition tests**
+
+Cover PNG/JPEG/WebP, EXIF orientation, supported HEIC decoding path, unsupported HEIC conversion message, recognition queued/success/empty/failure/retry, user tag override, refresh recovery and asset quota failure.
+
+- [ ] **Step 2: Write authoring history tests**
+
+Create/edit text; draw mouse and Pencil strokes; make lasso and annotation regions; commit each pointer sequence once; undo restores stable IDs and deletes only the last transaction.
+
+- [ ] **Step 3: Write selection, whole-work, annotation, and CORS export tests**
+
+Export selection bounds and whole-work visible-node union at pixelRatio 1 and 2 with transparent and canvas backgrounds. Assert 32 canvas-unit whole-work padding; include visible locked nodes; exclude hidden nodes, Transformer, guides, selection UI and DOM overlays. Cover persistent annotation snapshots, empty selection, empty document, maximum-pixel rejection, rotated nodes and write failure with zero document mutation and zero empty download.
+
+Run a second-origin fixture without `Access-Control-Allow-Origin` in Chromium and WebKit. Assert admission rejects that URL before Stage insertion, the canvas remains untainted, and a subsequent same-origin selection and whole-work export still succeeds.
+
+- [ ] **Step 4: Implement minimal foundations**
+
+Wire import, authoring and export commands through the real `CreoorApp` → reducer → `LogicalTreeRenderer` path. Set `crossOrigin="anonymous"` before approved image sources. Public fixtures are same-origin. Mock recognition is visibly labeled “演示识别”; user tags override Mock tags. E2E may not invoke domain functions directly as a substitute for UI integration.
+
+- [ ] **Step 5: Run golden-path foundation E2E**
+
+Import image → recognition → correct tag → create text/stroke/annotation → export selection PNG → export whole-work PNG → reload and verify all durable objects. Assert both files use their specified bounds and contain no editor UI.
+
+- [ ] **Step 6: Verify and commit**
+
+Run: `pnpm --dir creoor test src/assets src/canvas/authoring.test.ts src/canvas/CanvasExportService.test.ts && pnpm --dir creoor test:e2e e2e/import-authoring-export.spec.ts && pnpm --dir creoor typecheck`
+
+```bash
+git add creoor/src/assets creoor/src/canvas creoor/src/components creoor/src/app/CreoorApp.tsx creoor/src/domain/project-reducer.ts creoor/src/domain/project-reducer.test.ts creoor/src/storage/metadata-store.ts creoor/e2e/import-authoring-export.spec.ts creoor/e2e/fixtures/cors-image-server.ts
+git commit -m "feat(creoor): add core canvas authoring and import"
+```
+
+## Task 6: Add Selection, Snapping, Logical Layers, Minimap, and Canvas Utilities
 
 **Files:**
 - Create: `creoor/src/canvas/snapping.ts`
 - Create: `creoor/src/canvas/snapping.test.ts`
+- Create: `creoor/src/canvas/alignment.ts`
+- Create: `creoor/src/canvas/alignment.test.ts`
 - Create: `creoor/src/canvas/SelectionOverlay.tsx`
-- Modify: `creoor/src/canvas/CanvasStage.tsx`
-- Modify: `creoor/src/canvas/LogicalLayerRenderer.tsx`
-- Modify: `creoor/src/domain/document-reducer.ts`
-- Modify: `creoor/src/domain/document-reducer.test.ts`
 - Create: `creoor/src/panels/CanvasUtilityPanel.tsx`
+- Create: `creoor/src/panels/LogicalLayerTree.tsx`
+- Create: `creoor/e2e/canvas-editing.spec.ts`
+- Modify: `creoor/src/app/CreoorApp.tsx`
+- Modify: `creoor/src/canvas/CanvasStage.tsx`
+- Modify: `creoor/src/canvas/LogicalTreeRenderer.tsx`
+- Modify: `creoor/src/domain/project-reducer.ts`
+- Modify: `creoor/src/domain/project-reducer.test.ts`
 
 **Interfaces:**
-- Produces: `calculateSnap(dragRect, candidates, options): SnapResult`, `alignSelection(ids, mode)`, selection rectangle, transformer, guide rendering, and logical layer controls.
-- Consumes: coordinate helpers, document reducer, theme bridge.
+- Produces: grid/object/center/rotation snapping, multi-select, Transformer normalization, alignment/distribution, accessible logical tree, minimap/navigation, grid/zoom/shortcut controls.
+- Consumes: Tasks 3–5.
 
-- [ ] **Step 1: Write snap tests**
+- [ ] **Step 1: Write table-driven geometry tests**
 
-```ts
-it("uses a zoom-independent six screen-pixel threshold", () => {
-  const result = calculateSnap(rect(49, 10, 20, 20), [guideX(50)], { scale: 2, thresholdPx: 6, grid: 8 });
-  expect(result.x).toBe(50);
-  expect(result.guides).toEqual([{ axis: "x", value: 50, kind: "object" }]);
-});
-```
+At scale 0.1/1/4 assert a 6 screen-pixel snap threshold. Test grid, object edge/center, rotation, disabled snapping, all alignment/distribution modes to 0.01 canvas-unit tolerance, Transformer min size and normalized width/height.
 
-Cover grid, stage edge, object edge/center, rotation increments, disabled snapping, and no candidate inside threshold.
+- [ ] **Step 2: Write tree and history integration tests**
 
-- [ ] **Step 2: Run tests and verify failure**
+Hidden nodes do not hit; locked nodes cannot transform; group/ungroup preserves world transforms; logical tree keyboard actions update Canvas; one drag is one undo item.
 
-Run: `pnpm --dir creoor test src/canvas/snapping.test.ts`
+- [ ] **Step 3: Implement utilities**
 
-Expected: FAIL because snapping is missing.
+Minimap shows world bounds and viewport rectangle, click navigates; grid toggle and size, snap toggle, zoom controls, fit selection, layer CRUD and shortcut help are functional rather than visual-only.
 
-- [ ] **Step 3: Implement pure snapping and alignment calculations**
+- [ ] **Step 4: Run browser editing E2E and commit**
 
-Return proposed coordinates plus visible guide descriptors. Never mutate Konva nodes inside calculation functions.
-
-- [ ] **Step 4: Implement click, Shift multi-select, box select, and Transformer**
-
-Keep selected IDs in React state. During drag render guides in the interaction Layer; commit coordinates to the reducer on drag end.
-
-- [ ] **Step 5: Implement logical layer controls**
-
-Add rename, hide, lock, group, ungroup, reorder, undo, and redo actions in `CanvasUtilityPanel`. Render hidden nodes as absent and locked nodes as non-listening.
-
-- [ ] **Step 6: Add alignment commands**
-
-Implement left/center/right, top/middle/bottom, horizontal distribution, and vertical distribution for two or more selected nodes.
-
-- [ ] **Step 7: Run and commit**
-
-Run: `pnpm --dir creoor test src/canvas/snapping.test.ts src/domain/document-reducer.test.ts && pnpm --dir creoor typecheck`
-
-Expected: PASS.
+Run: `pnpm --dir creoor test src/canvas/snapping.test.ts src/canvas/alignment.test.ts src/domain && pnpm --dir creoor test:e2e e2e/canvas-editing.spec.ts && pnpm --dir creoor typecheck`
 
 ```bash
-git add creoor/src/canvas creoor/src/domain creoor/src/panels/CanvasUtilityPanel.tsx
-git commit -m "feat(creoor): add selection snapping and layers"
+git add creoor/src/canvas creoor/src/panels creoor/src/app/CreoorApp.tsx creoor/src/domain/project-reducer.ts creoor/src/domain/project-reducer.test.ts creoor/e2e/canvas-editing.spec.ts
+git commit -m "feat(creoor): add canvas editing utilities"
 ```
 
-## Task 5: Implement Dockable Panels and Saved Layouts
+## Task 7: Implement Orthogonal Dockable Panels and Tool Surfaces
 
 **Files:**
+- Create: `creoor/src/panels/panel-machine.ts`
+- Create: `creoor/src/panels/panel-machine.test.ts`
 - Create: `creoor/src/panels/panel-layout.ts`
 - Create: `creoor/src/panels/panel-layout.test.ts`
 - Create: `creoor/src/panels/DockablePanel.tsx`
 - Create: `creoor/src/panels/UserProjectPanel.tsx`
+- Create: `creoor/src/panels/UserProjectPanel.test.tsx`
+- Create: `creoor/src/projects/project-controller.ts`
+- Create: `creoor/src/projects/project-controller.test.ts`
+- Create: `creoor/src/panels/DataManagementDialog.tsx`
+- Create: `creoor/src/panels/DataManagementDialog.test.tsx`
 - Create: `creoor/src/panels/AgentPanel.tsx`
-- Modify: `creoor/src/panels/CanvasUtilityPanel.tsx`
-- Modify: `creoor/src/app/CreoorApp.tsx`
-- Modify: `creoor/src/theme/components.css`
-
-**Interfaces:**
-- Produces: `placePanel(layout, viewport, occupied): PanelLayout`, `DockablePanelProps`, and desktop/iPad saved layouts.
-- Consumes: persistence adapter and semantic/component tokens.
-
-- [ ] **Step 1: Write panel geometry tests**
-
-```ts
-it("docks to the left edge and removes the outer radius state", () => {
-  const next = placePanel(floating({ x: 3, y: 120, width: 240 }), viewport(1200, 800), []);
-  expect(next.mode).toBe("docked");
-  expect(next.edge).toBe("left");
-  expect(next.x).toBe(0);
-});
-```
-
-Cover all edges, collision avoidance, viewport clamping, Agent width limits, collapsed placement, and restore-default.
-
-- [ ] **Step 2: Run tests and verify failure**
-
-Run: `pnpm --dir creoor test src/panels/panel-layout.test.ts`
-
-Expected: FAIL because layout functions are missing.
-
-- [ ] **Step 3: Implement `DockablePanel` states**
-
-Use a pointer-captured DOM drag handle. Show edge previews while dragging. Support `docked`, `floating`, `collapsed`, `peek`, `pinned`, and `dragging`. Clicking canvas blank space closes only `peek` panels.
-
-- [ ] **Step 4: Implement collision avoidance and Agent resizing**
-
-Clamp Agent width to 300–560px on desktop and 280–420px on iPad. Resolve docked collisions by placing the later panel after the occupied segment along the same edge.
-
-- [ ] **Step 5: Apply state-specific themed visuals and motion**
-
-Use component tokens for edge radii, borders, backgrounds, shadows, blur, 180–240ms transitions, and reduced-motion overrides.
-
-- [ ] **Step 6: Persist desktop and iPad layouts**
-
-Use `matchMedia("(pointer: coarse)")` plus viewport width to choose the profile. Save global defaults and optional project overrides.
-
-- [ ] **Step 7: Run and commit**
-
-Run: `pnpm --dir creoor test src/panels/panel-layout.test.ts src/data/persistence.test.ts && pnpm --dir creoor typecheck`
-
-Expected: PASS.
-
-```bash
-git add creoor/src/panels creoor/src/app/CreoorApp.tsx creoor/src/theme/components.css creoor/src/data/persistence.ts
-git commit -m "feat(creoor): add dockable workbench panels"
-```
-
-## Task 6: Build the Expandable Tool Rail and Brush Popover
-
-**Files:**
 - Create: `creoor/src/tools/tool-registry.ts`
 - Create: `creoor/src/tools/ToolRail.tsx`
+- Create: `creoor/src/tools/ToolRail.test.tsx`
 - Create: `creoor/src/tools/BrushPopover.tsx`
+- Create: `creoor/src/icons/animated/LICENSE`
+- Create: `creoor/src/icons/animated/SelectAnimatedIcon.tsx`
+- Create: `creoor/src/icons/animated/HandAnimatedIcon.tsx`
+- Create: `creoor/src/icons/animated/BrushAnimatedIcon.tsx`
+- Create: `creoor/src/icons/animated/LassoAnimatedIcon.tsx`
+- Create: `creoor/src/icons/animated/TextAnimatedIcon.tsx`
+- Create: `creoor/src/icons/animated/UploadAnimatedIcon.tsx`
+- Create: `creoor/src/icons/animated/index.ts`
+- Create: `creoor/e2e/panels-tools.spec.ts`
+- Create: `creoor/e2e/projects-privacy.spec.ts`
 - Modify: `creoor/src/app/CreoorApp.tsx`
+- Modify: `creoor/src/app/app.css`
 - Modify: `creoor/src/theme/components.css`
+- Modify: `creoor/src/storage/metadata-store.ts`
+- Modify: `creoor/src/storage/asset-reachability.ts`
+- Modify: `creoor/src/data/mock-task-runner.ts`
 
 **Interfaces:**
-- Produces: `ToolDefinition { id, label, shortcut, icon, panel }`, compact/expanded rail, and detachable brush settings.
-- Consumes: `DockablePanel`, document actions, theme tokens.
+- Produces: legal panel transition machine, measured collision/clamp layout, four primary panels, compact/expanded tool rail and detachable brush settings.
+- Consumes: Tasks 1–6 and persistence from Task 2.
 
-- [ ] **Step 1: Write component tests for compact, expanded, and keyboard behavior**
+- [ ] **Step 1: Test every legal and representative illegal transition**
 
-```tsx
-it("shows labels and shortcuts only when expanded", async () => {
-  render(<ToolRail expanded={false} onExpandedChange={() => {}} />);
-  expect(screen.queryByText("画笔")).not.toBeInTheDocument();
-  await userEvent.click(screen.getByRole("button", { name: "展开工具栏" }));
-  expect(screen.getByText("画笔")).toBeVisible();
-  expect(screen.getByText("P")).toBeVisible();
-});
-```
+Cover dock/floating + collapse/peek/pinned, blank click, Escape, drag/cancel/pointercancel, resize, refresh serialization and restoring pre-drag state.
 
-- [ ] **Step 2: Run and verify failure**
+- [ ] **Step 2: Test measured layout**
 
-Run: `pnpm --dir creoor test src/tools`
+Use width and height. Cover four edges, collision avoidance, viewport resize, safe area, Agent widths 300–560 desktop and 280–420 iPad, and ≤1 CSS px geometry tolerance. Measure and test the resizable Agent panel shell created in this task; Task 9 fills it with session content.
 
-Expected: FAIL because tool components are missing.
+- [ ] **Step 3: Implement project, privacy, primary-panel, and tool UI**
 
-- [ ] **Step 3: Implement the registry and rail**
+Mount exactly four primary surfaces in `CreoorApp`: `UserProjectPanel`, `ToolRail`, `CanvasUtilityPanel`, and a resizable `AgentPanel` shell. `UserProjectPanel` shows the current project, last-output thumbnail, recent/searchable projects, visible save state, an always-visible “仅存于此浏览器” badge and expandable shared-device guidance.
 
-Register select, hand, brush, text, upload, image generator, history, libraries, and inspiration actions. Use Lucide Animated where available and Lucide fallback with matching stroke width.
+Implement these flows through `project-controller`, not component-local state: create, trimmed non-empty rename, duplicate-name disambiguation, switch-after-successful-flush, save-failure blocking switch, delete cancel/confirm, active Mock-task cancellation, cross-project/library asset preservation, last-project replacement and refresh recovery. Test cover selection and recomputation in the order successful derived result → imported image → themed fallback, with no Blob duplication. The controller commits metadata before reachable-asset GC and ignores cancelled-task late events. The project menu exposes delete-current-project; data management opens `DataManagementDialog` for clear-all-local-data. Destructive dialogs list exact scope, make zero writes on cancel, restore focus, and announce completion/failure through `aria-live`.
 
-- [ ] **Step 4: Implement `BrushPopover`**
+Register only tools whose behavior exists after Tasks 4–6: select, hand, brush, lasso/annotation, text and upload. Do not yet register image generator, history, libraries or public inspiration. Compact mode shows icons; expanded mode shows Chinese labels and shortcuts.
 
-Provide width, color role, opacity, and preset controls. Anchor to the brush button, allow dragging into a standalone floating panel, and retain settings when temporarily closed.
+- [ ] **Step 4: Vendor animated icons**
 
-- [ ] **Step 5: Implement input-specific animation triggers**
+Copy only used MIT Lucide Animated source components into `creoor/src/icons/animated/` and include the upstream license. Use the Task 1 `motion` runtime. Replace embedded color, duration and easing constants with typed theme/motion tokens so the token guard passes. Reduced motion renders static Lucide or necessary opacity-only feedback; there is no runtime CLI/network.
 
-Play once on hover for fine pointers and on activation for coarse pointers. Disable transform animation under reduced motion.
+- [ ] **Step 5: Browser test and commit**
 
-- [ ] **Step 6: Run and commit**
+Browser assertions prove all four primary panels are mounted, Agent resize works, project/privacy flows are durable, and every visible tool performs a real action. Assert image-generator/history/library/inspiration entries are absent at this task boundary.
 
-Run: `pnpm --dir creoor test src/tools && pnpm --dir creoor typecheck`
-
-Expected: PASS.
+Run: `pnpm --dir creoor test src/panels src/projects src/tools && pnpm --dir creoor test:e2e e2e/panels-tools.spec.ts e2e/projects-privacy.spec.ts && pnpm --dir creoor typecheck`
 
 ```bash
-git add creoor/src/tools creoor/src/app/CreoorApp.tsx creoor/src/theme/components.css
-git commit -m "feat(creoor): add expandable creative tools"
+git add creoor/src/panels creoor/src/projects creoor/src/tools creoor/src/icons creoor/src/app creoor/src/theme/components.css creoor/src/storage creoor/src/data/mock-task-runner.ts creoor/e2e/panels-tools.spec.ts creoor/e2e/projects-privacy.spec.ts
+git commit -m "feat(creoor): add dockable panels and tools"
 ```
 
-## Task 7: Add Fashion Libraries and Image-Aware Action Menus
+## Task 8: Implement Image Capability Actions, Provenance Libraries, and Non-Destructive Results
 
 **Files:**
+- Create: `creoor/src/images/capability-ast.ts`
 - Create: `creoor/src/images/image-capabilities.ts`
 - Create: `creoor/src/images/image-capabilities.test.ts`
 - Create: `creoor/src/images/ImageActionMenu.tsx`
+- Create: `creoor/src/images/ImageActionMenu.test.tsx`
 - Create: `creoor/src/images/LibraryPanel.tsx`
-- Modify: `creoor/src/data/fixtures.ts`
+- Create: `creoor/src/images/LibraryPanel.test.tsx`
+- Create: `creoor/src/images/action-runner.ts`
+- Create: `creoor/src/images/action-runner.test.ts`
+- Create: `creoor/e2e/image-actions.spec.ts`
 - Modify: `creoor/src/app/CreoorApp.tsx`
+- Modify: `creoor/src/canvas/SelectionOverlay.tsx`
+- Modify: `creoor/src/domain/project-reducer.ts`
+- Modify: `creoor/src/domain/project-reducer.test.ts`
+- Modify: `creoor/src/tools/tool-registry.ts`
+- Modify: `creoor/src/storage/schema.ts`
+- Modify: `creoor/src/storage/metadata-store.ts`
+- Modify: `creoor/src/storage/asset-reachability.test.ts`
 
 **Interfaces:**
-- Produces: `ImageTag`, `ImageAction`, `actionsForImage(tags)`, `intersectionForSelection(images)`, `allActionsWithApplicability(images)`, contextual DOM menu, and history/private/public libraries.
-- Consumes: selected node IDs, coordinate adapter, Mock image metadata.
+- Produces: predicate AST, applicability IDs, menu union/intersection/all, creation-history/private/public IA, provenance and derived-node runner.
+- Consumes: Tasks 2, 3, 5–7.
 
-- [ ] **Step 1: Write capability resolution tests**
+- [ ] **Step 1: Write exhaustive capability contract tests**
 
-```ts
-it("returns common actions for a portrait product-image multi-selection", () => {
-  const result = intersectionForSelection([
-    image(["portrait", "model", "garment"]),
-    image(["product", "garment"]),
-  ]);
-  expect(result.map((action) => action.id)).toEqual(expect.arrayContaining(["upscale", "remove-background", "change-garment"]));
-  expect(result.map((action) => action.id)).not.toContain("relight-portrait");
-});
-```
+Enumerate 100% of approved tag and action IDs, Chinese labels and predicates. Cover unknown/empty/multi-tag images, single union, multi intersection, and `allActionsWithApplicability()` returning exact `applicableImageIds`.
 
-Cover pattern, portrait, sketch, product, casual photo, fabric, and multi-tag union/intersection.
+- [ ] **Step 2: Write non-destructive runner tests**
 
-- [ ] **Step 2: Run and verify failure**
+Assert confirmation causes zero calls before approval; derived results preserve source, land to the right, keep original, undo removes derived result, and partial success allows per-item retry.
 
-Run: `pnpm --dir creoor test src/images/image-capabilities.test.ts`
+- [ ] **Step 3: Implement information architecture and provenance**
 
-Expected: FAIL because the registry is missing.
+Separate undo/redo, project creation history, cross-project private library and read-only public library. Show source/license/portrait permission and “仅演示/可导出”. Saving to private library retains provenance. Persist creation-history and private-library asset references, include them in reachability GC, mount both surfaces, and only then register `history` and `libraries` in `tool-registry`.
 
-- [ ] **Step 3: Implement the action registry**
+- [ ] **Step 4: Run the complete direct image-action foundation E2E**
 
-Include all universal, garment, pattern, portrait, sketch, product, casual-photo, and fabric actions in the approved specification. Each action declares applicable tags and a Chinese label.
+Import → recognize/correct → open the image capability menu → choose change-fabric → confirm applicability → Mock derived image beside source → compare → save library → export. Drive the real `CreoorApp`, reducer, renderer, storage and tool entry; do not call domain helpers directly. This validates direct actions; the approved Agent-clarification golden path is completed in Task 9.
 
-- [ ] **Step 4: Implement `ImageActionMenu`**
+- [ ] **Step 5: Verify and commit**
 
-Anchor the DOM menu near the selected Konva image using `canvasToScreen`. Single selection shows union plus universal actions; multi-selection defaults to intersection. The “全部” tab shows applicability counts and requires confirmation before partial execution.
-
-- [ ] **Step 5: Implement `LibraryPanel`**
-
-Rename assets to history and expose 模特、服装、鞋履、箱包、配饰、面料、纹样. Add private/public filters and “保存到我的图库”. Dragging a library card onto the canvas creates an image node.
-
-- [ ] **Step 6: Run and commit**
-
-Run: `pnpm --dir creoor test src/images && pnpm --dir creoor typecheck`
-
-Expected: PASS.
+Run: `pnpm --dir creoor test src/images && pnpm --dir creoor test:e2e e2e/image-actions.spec.ts && pnpm --dir creoor typecheck`
 
 ```bash
-git add creoor/src/images creoor/src/data/fixtures.ts creoor/src/app/CreoorApp.tsx
-git commit -m "feat(creoor): add fashion image capabilities"
+git add creoor/src/images creoor/src/app/CreoorApp.tsx creoor/src/canvas/SelectionOverlay.tsx creoor/src/domain/project-reducer.ts creoor/src/domain/project-reducer.test.ts creoor/src/tools/tool-registry.ts creoor/src/storage creoor/e2e/image-actions.spec.ts
+git commit -m "feat(creoor): add non-destructive fashion actions"
 ```
 
-## Task 8: Implement Multi-Selection Context and Explicit Agent References
+## Task 9: Implement Agent Session CRUD and Durable Explicit References
 
 **Files:**
-- Create: `creoor/src/agent/references.ts`
-- Create: `creoor/src/agent/references.test.ts`
+- Create: `creoor/src/agent/reference-model.ts`
+- Create: `creoor/src/agent/reference-model.test.ts`
+- Create: `creoor/src/agent/context-builder.ts`
+- Create: `creoor/src/agent/context-builder.test.ts`
+- Create: `creoor/src/agent/mention-model.ts`
+- Create: `creoor/src/agent/mention-model.test.ts`
+- Create: `creoor/src/agent/conversation-runner.ts`
+- Create: `creoor/src/agent/conversation-runner.test.ts`
 - Create: `creoor/src/agent/ReferenceTray.tsx`
 - Create: `creoor/src/agent/AgentComposer.tsx`
 - Create: `creoor/src/agent/ConversationList.tsx`
+- Create: `creoor/src/agent/ConversationList.test.tsx`
+- Create: `creoor/src/agent/ClarificationMessage.tsx`
+- Create: `creoor/src/domain/session-reducer.ts`
+- Create: `creoor/src/domain/session-reducer.test.ts`
+- Create: `creoor/e2e/agent-references.spec.ts`
+- Create: `creoor/e2e/agent-clarification.spec.ts`
 - Modify: `creoor/src/panels/AgentPanel.tsx`
-- Modify: `creoor/src/canvas/SelectionOverlay.tsx`
-- Modify: `creoor/src/domain/document-reducer.ts`
+- Modify: `creoor/src/app/CreoorApp.tsx`
+- Modify: `creoor/src/images/action-runner.ts`
+- Modify: `creoor/src/storage/schema.ts`
+- Modify: `creoor/src/storage/metadata-store.ts`
+- Modify: `creoor/src/storage/asset-reachability.ts`
+- Modify: `creoor/src/storage/asset-reachability.test.ts`
 
 **Interfaces:**
-- Produces: `parseReferences(text, candidates)`, `resolveReference(id, document)`, stable reference records, selection context bar, per-session context, and Mock clarification flow.
-- Consumes: selected canvas nodes, Mock API, canvas coordinate adapter.
+- Produces: session CRUD, structured mention tokens, live/frozen/region references, durable snapshots, explicit Mock payload builder, cancellable conversation runner, clarification messages with one to three typed action proposals, prompt expansion and skill selection.
+- Consumes: Tasks 2–8.
 
-- [ ] **Step 1: Write reference stability tests**
+- [ ] **Step 1: Write reference lifecycle tests**
 
-```ts
-it("keeps a stable reference after its image is renamed", () => {
-  const reference = createReference({ objectId: "image-1", label: "图1" });
-  const renamed = renameObject(fixtureDocument(), "image-1", "红色连衣裙正面");
-  expect(resolveReference(reference, renamed)).toMatchObject({ objectId: "image-1", currentLabel: "红色连衣裙正面" });
-});
-```
+Cover refresh, rename, source mutation, region snapshot and cross-session isolation. For source deletion, test preserve-snapshot, cascade-delete and cancel paths: no option is preselected; cancel makes zero mutations; preserve converts live references and marks the source deleted; cascade removes references from future Mock payloads and garbage-collects only unreachable snapshot Blobs. Cover clear-project GC separately.
 
-Also test deleted-object snapshots, current selection, annotated region, and session isolation.
+- [ ] **Step 2: Prove explicit isolation**
 
-- [ ] **Step 2: Run and verify failure**
+Build a fixture with 100 canvas objects and 3 explicit references. Spy on Mock payload and assert exactly those three IDs/allowed attributes appear; unreferenced occurrence count is zero.
 
-Run: `pnpm --dir creoor test src/agent/references.test.ts`
+- [ ] **Step 3: Test structured Chinese mentions**
 
-Expected: FAIL because reference functions are missing.
+Return token range, reference ID, suffix and ambiguity. Cover duplicate names, longest match, `@图1的版型`, selection regions and IME composition without corrupting text.
 
-- [ ] **Step 3: Implement selection context actions**
+- [ ] **Step 4: Test clarification gating and action handoff**
 
-Add “添加到当前会话”, “生成带批注截图”, “仅分析”, alignment, grouping, and batch actions. Use Konva `toCanvas()` for the selected region and keep the resulting preview in Mock memory only.
+An ambiguous fashion prompt returns one to three clarification proposals. Each contains a stable proposal ID, explicit reference IDs, action ID and editable parameters. Selecting a proposal creates a pending action confirmation but makes zero image-action calls. Confirming applicability invokes `action-runner` exactly once with only the approved `applicableImageIds`. Cancel, session switch, retry and stale request events cannot execute a proposal.
 
-- [ ] **Step 4: Implement reference tray and `@` picker**
+- [ ] **Step 5: Implement session, conversation runner, and composer UI**
 
-Show thumbnail, stable number, short name, origin, and remove control. Parse `@图1`, named images, current selection, annotated regions, and attribute suffixes such as `的版型` or `的纹样`.
+Wire the real `AgentPanel` shell, `CreoorApp`, session reducer, `action-runner` and persistence. Support new/rename/switch/delete, reference tray/count, prompt expansion, skill selection and Mock voice transcription without requesting microphone permission. Render normal, clarification, pending-confirmation, partial, failed and retry states. Clarification chips are keyboard accessible. Hover/focus cross-highlighting aligns within 2 CSS px. E2E may not call the runner or action domain functions directly.
 
-- [ ] **Step 5: Implement isolated sessions and Mock conversation flow**
+- [ ] **Step 6: Run both approved Agent golden-path E2Es**
 
-Provide multiple sessions with separate reference sets and messages. When a prompt is ambiguous, return one to three clarification chips. Do not read canvas objects unless explicitly referenced.
+1. Import garment → recognize/correct → add explicit reference → send ambiguous change-fabric/change-pattern prompt → assert zero action calls → choose clarification → confirm applicability → assert one scoped action → derived result beside source → save library → export.
+2. Draw annotation → create persistent region snapshot → structured `@` reference → send → reload → verify message and snapshot → test source deletion cancel, then preserve option.
 
-- [ ] **Step 6: Add visual cross-highlighting**
+- [ ] **Step 7: Verify and commit**
 
-Hovering or focusing a reference highlights the associated canvas object/region in the interaction Layer. Selecting a canvas object highlights the matching tray item.
-
-- [ ] **Step 7: Run and commit**
-
-Run: `pnpm --dir creoor test src/agent src/domain/document-reducer.test.ts && pnpm --dir creoor typecheck`
-
-Expected: PASS.
+Run: `pnpm --dir creoor test src/agent src/domain/session-reducer.test.ts && pnpm --dir creoor test:e2e e2e/agent-references.spec.ts e2e/agent-clarification.spec.ts && pnpm --dir creoor typecheck`
 
 ```bash
-git add creoor/src/agent creoor/src/panels/AgentPanel.tsx creoor/src/canvas/SelectionOverlay.tsx creoor/src/domain/document-reducer.ts
-git commit -m "feat(creoor): add explicit agent references"
+git add creoor/src/agent creoor/src/domain/session-reducer.ts creoor/src/domain/session-reducer.test.ts creoor/src/panels/AgentPanel.tsx creoor/src/app/CreoorApp.tsx creoor/src/images/action-runner.ts creoor/src/storage creoor/e2e/agent-references.spec.ts creoor/e2e/agent-clarification.spec.ts
+git commit -m "feat(creoor): add durable agent references"
 ```
 
-## Task 9: Build Generator Nodes and Anchored DOM Forms
+## Task 10: Build Generator Nodes and Anchored DOM Forms
 
 **Files:**
-- Create: `creoor/src/generators/generator-state.ts`
-- Create: `creoor/src/generators/generator-state.test.ts`
+- Create: `creoor/src/generators/generator-machine.ts`
+- Create: `creoor/src/generators/generator-machine.test.ts`
 - Create: `creoor/src/generators/anchor-placement.ts`
 - Create: `creoor/src/generators/anchor-placement.test.ts`
 - Create: `creoor/src/canvas/GeneratorNode.tsx`
 - Create: `creoor/src/generators/GeneratorForm.tsx`
-- Modify: `creoor/src/canvas/LogicalLayerRenderer.tsx`
+- Create: `creoor/src/generators/GeneratorForm.test.tsx`
+- Create: `creoor/src/generators/generator-integration.test.tsx`
+- Create: `creoor/e2e/generator.spec.ts`
 - Modify: `creoor/src/app/CreoorApp.tsx`
-- Modify: `creoor/src/data/mock-api.ts`
+- Modify: `creoor/src/canvas/CanvasStage.tsx`
+- Modify: `creoor/src/canvas/LogicalTreeRenderer.tsx`
+- Modify: `creoor/src/canvas/SelectionOverlay.tsx`
+- Modify: `creoor/src/domain/project-reducer.ts`
+- Modify: `creoor/src/domain/project-reducer.test.ts`
+- Modify: `creoor/src/canvas/snapping.ts`
+- Modify: `creoor/src/tools/tool-registry.ts`
+- Modify: `creoor/src/storage/schema.ts`
 
 **Interfaces:**
-- Produces: generator state reducer, `placeAnchor(nodeRect, formSize, viewport)`, Konva placeholder/result node, and anchored/detached DOM form.
-- Consumes: Mock API, coordinate adapter, document reducer, DockablePanel behavior.
+- Produces: complete generator state/action table, requestId race protection, fixed-scale anchored/detached form and project-owned generator nodes.
+- Consumes: Tasks 2–9.
 
-- [ ] **Step 1: Write generator state tests**
+- [ ] **Step 1: Test 100% legal transitions and representative illegal transitions**
 
-```ts
-it("retains parameters and references after failure and retry", () => {
-  const failed = transition(configuredGenerator(), { type: "failed", message: "Mock timeout" });
-  const retried = transition(failed, { type: "retry" });
-  expect(retried.status).toBe("queued");
-  expect(retried.prompt).toBe(failed.prompt);
-  expect(retried.referenceIds).toEqual(failed.referenceIds);
-});
-```
+Cover empty/configured/queued/generating/paused/partial/completed/failed/cancelled/retrying. Illegal transitions preserve state and report a development error. Fake timers must end with zero pending timers.
 
-Cover empty, configured, queued, generating, partial, completed, paused, cancelled, failed, and retrying transitions.
+- [ ] **Step 2: Test every visible state action**
 
-- [ ] **Step 2: Write anchor placement tests**
+Assert queued cancel; generating pause/cancel; paused resume/cancel; partial accept/fill-missing/retry-all; failed retry/edit/delete; completed regenerate/copy/save/export; cancelled resubmit/delete.
 
-Test below-by-default, flip above, shift left/right, viewport clamp, maximum form width, and detached mode.
+- [ ] **Step 3: Test placement at 0.1×/1×/4×**
 
-- [ ] **Step 3: Run tests and verify failure**
+Use screen node bounds and 320–560px form limits; test below/above/side flip, VisualViewport, safe area, keyboard, detached mode and no flip oscillation.
 
-Run: `pnpm --dir creoor test src/generators`
+Anchored-form placement is presentation state and never enters undo history. Detaching the form changes workspace/panel state without changing generator canvas geometry.
 
-Expected: FAIL because generator logic is missing.
+- [ ] **Step 4: Test generator canvas editing semantics**
 
-- [ ] **Step 4: Implement the Konva generator node**
+Creating through the generator tool inserts a project-owned logical-tree node with stable `NodeId` and `GeneratorId`. Dragging updates its `CanvasPoint`, the DOM form follows within 2 CSS px, snapping uses Konva node bounds rather than the DOM form, and the complete drag creates one history transaction. Transformer commits normalized dimensions. Copy creates fresh IDs, preserves parameters/reference IDs, sets `configured`, clears `requestId` and starts zero Mock tasks. Delete aborts active work; late events are ignored. Undo/redo restores node and asset references. Reload preserves parameters/references and changes queued/generating to paused.
 
-Render title, dimensions, placeholder, progress, stage copy, error affordance, and completed fixture. Treat the node and anchored form as one selection/move unit for snapping.
+- [ ] **Step 5: Integrate the generator and stale-event protection**
 
-- [ ] **Step 5: Implement the DOM generator form**
+Wire `GeneratorNode` into `LogicalTreeRenderer`, selection, snapping, project reducer, persistence and `CreoorApp`. Async progress is accepted only for the current requestId and never creates history entries; create/move/resize/copy/delete use normal history transactions. Register `image-generator` only after UI creation is wired. Copy returns to configured; refresh changes queued/generating to paused.
 
-Include references, selection input, prompt, model, ratio, resolution, skill, Mock voice button, submit, collapse, expand, and detach. Use the coordinate adapter on every viewport/node change and flip the form to remain visible.
+- [ ] **Step 6: Browser E2E and commit**
 
-- [ ] **Step 6: Connect Mock lifecycle and copy behavior**
+Drive create, configure, move/snap, detach/reattach, copy, run, cancel/retry, delete, undo/redo and reload through the real UI.
 
-Copying duplicates parameters and reference IDs but sets status to `configured`; it never starts generation until submit.
-
-- [ ] **Step 7: Run and commit**
-
-Run: `pnpm --dir creoor test src/generators src/data/mock-api.test.ts && pnpm --dir creoor typecheck`
-
-Expected: PASS.
+Run: `pnpm --dir creoor test src/generators src/domain/project-reducer.test.ts && pnpm --dir creoor test:e2e e2e/generator.spec.ts && pnpm --dir creoor typecheck`
 
 ```bash
-git add creoor/src/generators creoor/src/canvas/GeneratorNode.tsx creoor/src/canvas/LogicalLayerRenderer.tsx creoor/src/data/mock-api.ts creoor/src/app/CreoorApp.tsx
-git commit -m "feat(creoor): add anchored generator nodes"
+git add creoor/src/generators creoor/src/canvas creoor/src/domain/project-reducer.ts creoor/src/domain/project-reducer.test.ts creoor/src/app/CreoorApp.tsx creoor/src/tools/tool-registry.ts creoor/src/storage/schema.ts creoor/e2e/generator.spec.ts
+git commit -m "feat(creoor): add resilient generator nodes"
 ```
 
-## Task 10: Complete iPad Adaptation, Error Recovery, and Accessibility
+## Task 11: Complete Keyboard, Accessibility, and Responsive Degradation
 
 **Files:**
+- Create: `creoor/src/accessibility/CanvasMirror.tsx`
+- Create: `creoor/src/accessibility/CanvasMirror.test.tsx`
+- Create: `creoor/e2e/accessibility.spec.ts`
+- Create: `creoor/e2e/responsive.spec.ts`
+- Modify: `creoor/src/app/CreoorApp.tsx`
 - Modify: `creoor/src/app/app.css`
-- Modify: `creoor/src/theme/components.css`
-- Modify: `creoor/src/canvas/gestures.ts`
-- Modify: `creoor/src/panels/DockablePanel.tsx`
-- Modify: `creoor/src/agent/AgentComposer.tsx`
-- Modify: `creoor/src/images/ImageActionMenu.tsx`
-- Modify: `creoor/src/generators/GeneratorForm.tsx`
-- Create: `creoor/src/app/CreoorApp.test.tsx`
-- Create: `creoor/src/test/render-app.tsx`
+- Modify: all interactive panels and menus from Tasks 6–10.
 
 **Interfaces:**
-- Produces: responsive desktop/iPad workbench, keyboard operation, reduced-motion behavior, local error recovery, and an integrated acceptance suite.
-- Consumes: all previous tasks.
+- Produces: DOM mirror, keyboard alternatives, focus restoration, aria-live statuses, coarse/fine input adaptation, portrait/narrow fallback.
+- Consumes: all UI tasks.
 
-- [ ] **Step 1: Write integrated accessibility and recovery tests**
+- [ ] **Step 1: Implement and test Canvas mirror**
 
-```tsx
-it("recovers a failed generator without losing its prompt", async () => {
-  renderCreoor({ generatorScenario: "failure" });
-  await userEvent.type(screen.getByRole("textbox", { name: "创作要求" }), "生成轻薄夏季连衣裙");
-  await userEvent.click(screen.getByRole("button", { name: "开始生成" }));
-  expect(await screen.findByText("生成失败")).toBeVisible();
-  await userEvent.click(screen.getByRole("button", { name: "重试生成" }));
-  expect(screen.getByRole("textbox", { name: "创作要求" })).toHaveValue("生成轻薄夏季连衣裙");
-});
-```
+Keyboard/screen reader users can locate, select, rename, hide, lock, delete, micro-move and reorder visible objects. Hidden nodes are not focusable; DOM order follows logical order.
 
-Add tests for keyboard opening/closing, Escape, focus restoration, deleted references, restore layout, and reduced-motion class application.
+- [ ] **Step 2: Add keyboard alternatives for panels**
 
-- [ ] **Step 2: Run integrated tests and verify failure**
+Provide commands to move/dock panels, resize Agent, restore layout and close transient layers. Escape closes peek/menu and restores focus to invoker; pinned panels remain.
 
-Run: `pnpm --dir creoor test src/app/CreoorApp.test.tsx`
+- [ ] **Step 3: Add responsive degradation**
 
-Expected: FAIL on missing accessibility/recovery behavior.
+Layout profile derives from available size and explicit preference, not one pointer query. `any-pointer/any-hover` adjusts targets and animation only. Test touch Windows, iPad external mouse, split screen, rotation, 200% zoom, safe area and soft keyboard. Narrow/portrait uses one-panel mode with a landscape suggestion.
 
-- [ ] **Step 3: Implement iPad layout and gesture conflict rules**
+- [ ] **Step 4: Run WCAG-tagged axe, computed contrast, and keyboard E2E**
 
-Use coarse-pointer media queries for 44px targets. Keep panel drag handles distinct from canvas gestures. Pen draws only when the brush tool is active; finger gestures pan/zoom; form inputs suppress canvas shortcuts.
+In default, menu, error, generating and completed states, run axe with `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22a`, and `wcag22aa`; all returned violations are zero without impact filtering or disabling `color-contrast`. The Canvas DOM mirror is in scope. Assert actual computed foreground/background combinations meet 4.5:1 body or 3:1 large-text/control/focus thresholds, coarse/fine target sizes, `aria-live`, focus restoration and the complete keyboard golden path.
 
-- [ ] **Step 4: Implement keyboard and focus behavior**
+- [ ] **Step 5: Verify and commit**
 
-Provide accessible names for icon-only buttons, visible focus rings, Escape to close transient layers, arrow-key navigation inside toolbars, shortcuts disabled while typing, and focus restoration to the invoking control.
-
-- [ ] **Step 5: Implement local error states**
-
-Add retry for recognition and generation, preserve inputs/references, clamp invalid panel positions, show deleted-reference snapshots, and avoid full-screen blocking errors.
-
-- [ ] **Step 6: Apply reduced motion and contrast safeguards**
-
-Disable elastic/transform transitions under reduced motion. Ensure selected/error/generating states include icon, text, or pattern in addition to color.
-
-- [ ] **Step 7: Run full verification**
-
-Run: `pnpm --dir creoor test && pnpm --dir creoor typecheck && pnpm --dir creoor build`
-
-Expected: all commands PASS with no token-guard violations.
-
-- [ ] **Step 8: Perform visual acceptance at target sizes**
-
-Run: `pnpm --dir creoor dev --host 0.0.0.0`
-
-Verify these exact viewports in the browser:
-
-- Desktop: 1440×900.
-- Wide desktop: 1920×1080.
-- iPad landscape: 1194×834.
-- iPad Pro landscape: 1366×1024.
-
-At each size verify panel docking/floating/collapse, Agent resize, blank-canvas dismissal, pinch/pan or emulated touch, image action menu placement, `@` highlighting, generator form flipping, and no clipped controls.
-
-- [ ] **Step 9: Commit**
+Run: `pnpm --dir creoor test src/accessibility && pnpm --dir creoor test:e2e e2e/accessibility.spec.ts e2e/responsive.spec.ts && pnpm --dir creoor typecheck`
 
 ```bash
-git add creoor
-git commit -m "feat(creoor): complete responsive workbench prototype"
+git add creoor/src/accessibility creoor/src/app creoor/src/panels creoor/src/tools creoor/src/images creoor/src/agent creoor/src/generators creoor/e2e/accessibility.spec.ts creoor/e2e/responsive.spec.ts
+git commit -m "feat(creoor): add accessible responsive interaction"
 ```
 
-## Task 11: Final Specification Trace and Handoff
+## Task 12: Run Cross-Browser Visual, Performance, and Real iPad Acceptance
+
+**Files:**
+- Create: `creoor/e2e/golden-paths.spec.ts`
+- Create: `creoor/e2e/visual.spec.ts`
+- Create: `creoor/e2e/performance.spec.ts`
+- Create: `creoor/e2e/fixtures/performance-document.ts`
+- Create: `creoor/e2e/fixtures/performance-trace.json`
+- Create: `creoor/src/performance/benchmark-runner.ts`
+- Create: `creoor/src/performance/benchmark-runner.test.ts`
+- Create: `docs/development/creoor-ipad-evidence.md`
+- Create: `docs/development/creoor-performance-evidence.md`
+- Create: `docs/development/creoor-usability-evidence.md`
+- Modify: `docs/development/creoor-acceptance.md`
+- Modify: `docs/design/creoor-visual-approval-manifest.json`
+
+**Interfaces:**
+- Produces: three-browser evidence, screenshots/diffs, metrics, iPad/Pencil manual record, complete requirement matrix.
+- Consumes: completed prototype.
+
+- [ ] **Step 1: Run both golden paths in all browser projects**
+
+Chromium, Firefox and WebKit must finish both approved golden paths from the real `CreoorApp` UI with zero uncaught exception, zero console error and zero failed assertion. The garment-variation path must assert no image action before Agent clarification and exactly one scoped action after confirmation.
+
+- [ ] **Step 2: Capture deterministic visual baselines**
+
+Use only the fixed `chromium-visual` CI project for pixel baselines; Firefox and WebKit keep functional and geometric assertions. Before capture, await `document.fonts.ready`, assert the committed Noto Sans SC and Inter files are active, assert zero font-network requests, and wait for durable app state. Capture all five fixed viewports with deterministic data and only manifest-declared masks. Assert no horizontal overflow, clipped controls, complete panel overlap or Konva-clipped DOM overlay.
+
+The first candidate images and every later baseline change require product-owner review. Record fixture/version hash, font hashes, Chromium/OS/container version, viewport, masks, screenshot SHA-256 and a signed approval receipt in the manifest. A manifest or baseline hash change without a valid new signature fails. After approval, apply ≤0.2% pixel diff to each screenshot independently.
+
+- [ ] **Step 3: Run performance fixture**
+
+Use the production build, fixed random seed, Task 0 environments and the 1000-node/500-stroke/50-reference/20-generator fixture. Commit a 60-second trace whose events specify timestamp, action, target ID, start/end coordinates or scale, duration and settle point. The benchmark runner replays the exact same trace on desktop and iPad; unit tests assert duration, event count/order, fixed target resolution and trace hash. Manual Pencil gestures remain separate.
+
+Desktop Chromium: 2 warmups, then 5 independent trace replays; rAF FPS, pointer-to-post-commit-rAF input latency, CDP `JSHeapUsedSize` after requested GC and app-ready TTI mark. The five-run median must meet FPS ≥55, input p95 <100ms, memory growth ≤20% and TTI <2s.
+
+On each approved iPad class, run Safari Web Inspector plus application rAF/event logs after 2 warmups for 3 independent 60-second runs. The three-run median must meet FPS ≥45 and input p95 <150ms. Record iPad memory/TTI trend without comparing absolute values to desktop. Write raw samples, aggregation, fixture/build hash and environment identity to `creoor-performance-evidence.md`; changed hardware/browser requires a new approved baseline.
+
+- [ ] **Step 4: Perform real iPad Safari + Pencil acceptance**
+
+Use both Task 0 target device classes; 1194×834 and 1366×1024 are screen CSS sizes, not forced VisualViewport dimensions. Record exact model, iPadOS/Safari build, Pencil model, display zoom, toolbar state and actual VisualViewport. Repeat each approved gesture 20 times. Video/event logs must prove zoom-center drift ≤2px, no accidental drawing/page scroll/browser zoom, panel handles never move canvas, and Pencil draws only in brush/lasso modes. Every Pencil sequence includes `pointerType === "pen"`, at least one `pressure > 0` event and finite `tiltX/tiltY`. Any failure or unavailable target device leaves the release clause failed.
+
+- [ ] **Step 5: Run target-designer usability acceptance**
+
+Run specification §15.1 with at least five independent fashion designers. Record only anonymous participant IDs, task completion, elapsed time, critical errors, moderator interventions and conclusions in `creoor-usability-evidence.md`; retain no participant assets or identity. `CR-PROD-001.A04` passes only when every stated threshold passes.
+
+- [ ] **Step 6: Complete atomic acceptance and waiver gates**
+
+Every `release` clause is `passed`; it cannot be waived. Only clauses marked `waivable` before Task 1 may be `waived`, with measured value, impact, reason, cryptographic product/technical signatures, issue, evidence and expiry ≤14 days. Expired or incomplete waivers, any `planned`/`failed` release clause, missing evidence, or parent/atomic set mismatch blocks delivery.
+
+- [ ] **Step 7: Verify locally, commit the candidate, then pass protected release CI**
+
+Before commit, run: `pnpm --dir creoor test:coverage && pnpm --dir creoor coverage:check-critical && pnpm --dir creoor tokens:check && pnpm --dir creoor typecheck && pnpm --dir creoor build && pnpm --dir creoor test:e2e && pnpm --dir creoor acceptance:plan && git diff --check`. Plan mode validates clause sets, fields and every present evidence hash but does not pretend to possess protected signer identity.
+
+```bash
+git add creoor/e2e creoor/src/performance docs/development/creoor-acceptance.md docs/development/creoor-acceptance.json docs/development/creoor-ipad-evidence.md docs/development/creoor-performance-evidence.md docs/development/creoor-usability-evidence.md docs/design/creoor-visual-approval-manifest.json
+git commit -m "test(creoor): complete cross-platform acceptance"
+git status --porcelain # expected: no output
+```
+
+Push the candidate branch. Protected CI, with repository-owner variables, runs the same tests plus `pnpm --dir creoor acceptance:check`; configure it as a required merge check. Signature, baseline, waiver or release-status failures require a corrective commit and another protected run. Never require release mode to pass before the candidate commit exists.
+
+## Task 13: Final Handoff Documentation
 
 **Files:**
 - Create: `creoor/README.md`
-- Create: `docs/development/creoor-acceptance.md`
 - Modify: `README.md`
+- Modify: `docs/development/creoor-acceptance.md`
 
 **Interfaces:**
-- Produces: exact run instructions, Mock scenario catalog, acceptance checklist, architecture boundary notes, and known first-release exclusions.
-- Consumes: completed prototype and design specification.
+- Produces: exact commands, Mock scenario catalog, storage/privacy disclosure, architecture boundaries, known exclusions and evidence links.
+- Consumes: Task 12 results.
 
-- [ ] **Step 1: Write the acceptance matrix**
+- [ ] **Step 1: Document commands and deterministic scenarios**
 
-Map each requirement in `docs/superpowers/specs/2026-07-28-creoor-workbench-design.md` to a test file or a numbered manual browser step. Include desktop, iPad, reduced motion, failure, retry, partial result, and restore-layout coverage.
+Document install/dev/test/coverage/E2E/token/typecheck/build commands and switches for success, empty, slow, recognition failure, generation failure, partial and quota failure. Include the one-time `pnpm --dir creoor exec playwright install chromium firefox webkit` bootstrap and Linux `--with-deps` variant. Document the committed font assets/licenses, Lucide Animated source/license, `motion` runtime, V8 coverage provider, exact visual-readiness wait, protected approval-variable setup, signed receipt flow, and how coverage/acceptance gates fail.
 
-- [ ] **Step 2: Document local commands and Mock scenarios**
+- [ ] **Step 2: Document privacy and data controls**
 
-Document:
+Explain local-only private meaning, IndexedDB/localStorage split, shared-device risk, delete project, clear all data, public fixture licensing and no microphone/network upload.
 
-```text
-pnpm install
-pnpm --dir creoor dev
-pnpm --dir creoor test
-pnpm --dir creoor typecheck
-pnpm --dir creoor build
-```
+- [ ] **Step 3: Document architecture and exclusions**
 
-List the success, empty, recognition failure, generation failure, partial generation, and slow-network fixture switches.
+State Konva/DOM boundary, state partitions, asset IDs, four layers, input controller, and exclusions: real AI/login/collaboration, full landing/inspiration, audio/video nodes, advanced Pencil tuning, complete dark/high-contrast themes.
 
-- [ ] **Step 3: Document architecture boundaries and exclusions**
+- [ ] **Step 4: Final local verification, candidate commit, and protected check**
 
-State that Konva owns canvas content, DOM owns product UI, React state is authoritative, and the prototype excludes real login/AI/collaboration, full landing page, advanced Pencil brush tuning, and complete dark/high-contrast themes.
-
-- [ ] **Step 4: Run final clean verification**
-
-Run: `pnpm --dir creoor test && pnpm --dir creoor typecheck && pnpm --dir creoor build && git diff --check`
-
-Expected: all commands PASS and `git diff --check` prints nothing.
-
-- [ ] **Step 5: Commit**
+Before commit, run: `pnpm --dir creoor test:coverage && pnpm --dir creoor coverage:check-critical && pnpm --dir creoor tokens:check && pnpm --dir creoor typecheck && pnpm --dir creoor build && pnpm --dir creoor test:e2e && pnpm --dir creoor acceptance:plan && git diff --check`.
 
 ```bash
 git add README.md creoor/README.md docs/development/creoor-acceptance.md
-git commit -m "docs: add creoor prototype handoff"
+git commit -m "docs: hand off creoor workbench prototype"
+git status --porcelain # expected: no output
 ```
+
+Push the final candidate and require protected CI to run `pnpm --dir creoor acceptance:check` before merge or release. Local plan mode is not release evidence.
