@@ -5,7 +5,84 @@ export interface VersionedEntity {
   version: number;
 }
 
-export type CanvasNodeType = "image" | "text" | "artboard" | "generation-placeholder";
+export type CanvasNodeType =
+  | "image"
+  | "text"
+  | "shape"
+  | "path"
+  | "artboard"
+  | "image-generator"
+  | "video-generator"
+  | "generation-placeholder";
+
+export type GeneratorStatus =
+  | "draft"
+  | "submitting"
+  | "running"
+  | "succeeded"
+  | "partially-failed"
+  | "failed"
+  | "cancelled";
+
+export type ImageQuality = "auto" | "high" | "medium" | "low";
+export type ImageSeedMode = "random" | "fixed";
+
+export type ImageSizePreset =
+  | "auto"
+  | "1:1"
+  | "3:2"
+  | "2:3"
+  | "4:3"
+  | "3:4"
+  | "9:16"
+  | "1:1-2k"
+  | "16:9-2k"
+  | "9:16-2k"
+  | "16:9-4k"
+  | "9:16-4k"
+  | "custom";
+
+export interface ImageModelCapability {
+  id: string;
+  label: string;
+  description: string;
+  available: boolean;
+  supportsReferences: boolean;
+  qualities: ImageQuality[];
+  sizePresets: ImageSizePreset[];
+  maxOutputCount: number;
+  costEstimate?: string;
+}
+
+export interface CanvasGeneratorSnapshot {
+  prompt: string;
+  modelId: string;
+  quality: ImageQuality;
+  sizePreset: ImageSizePreset;
+  width?: number;
+  height?: number;
+  aspectRatio: string;
+  outputCount: number;
+  referenceAssetUrls: string[];
+  seedMode?: ImageSeedMode;
+  seed?: number;
+}
+
+export interface GeneratorConfig {
+  prompt: string;
+  referenceNodeIds: EntityId[];
+  referenceAssetUrls: string[];
+  modelId: string;
+  quality?: ImageQuality;
+  sizePreset?: ImageSizePreset;
+  width?: number;
+  height?: number;
+  aspectRatio: string;
+  outputCount: number;
+  status: GeneratorStatus;
+  seedMode?: ImageSeedMode;
+  seed?: number;
+}
 
 export interface CanvasNode {
   id: EntityId;
@@ -14,7 +91,16 @@ export interface CanvasNode {
   y: number;
   width: number;
   height: number;
+  name?: string;
+  visible?: boolean;
+  rotation?: number;
   text?: string;
+  points?: number[];
+  stroke?: string;
+  strokeWidth?: number;
+  shapeKind?: "rectangle" | "circle" | "triangle" | "star" | "speech" | "arrow";
+  generator?: GeneratorConfig;
+  sourceGeneratorId?: EntityId;
   prompt?: string;
   assetUrl?: string;
   assetId?: EntityId;
@@ -27,7 +113,10 @@ export interface CanvasNode {
   status?: "queued" | "running" | "succeeded" | "failed";
   errorCode?: string;
   providerRequestId?: string;
+  providerErrorCode?: string;
+  providerErrorMessage?: string;
   resolvedModel?: string;
+  seed?: number;
 }
 
 export interface CanvasDocument extends VersionedEntity {
@@ -117,7 +206,10 @@ export interface GenerationRecord {
   retryOfId?: EntityId;
   errorCode?: string;
   providerRequestId?: string;
+  providerErrorCode?: string;
+  providerErrorMessage?: string;
   resolvedModel?: string;
+  seed?: number;
 }
 
 export interface DemoProject {
@@ -234,6 +326,12 @@ export interface PendingAgentAction {
   expiresAt: string;
   createdAt: string;
   confirmedAt?: string;
+  source?: "agent" | "canvas-generator";
+  generatorNodeId?: EntityId;
+  generatorConfig?: CanvasGeneratorSnapshot;
+  idempotencyKey?: string;
+  costEstimate?: string;
+  billingReservationId?: string;
 }
 
 export interface AgentStateDocument {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { CanvasNode } from "@loomoon/contracts";
 import {
+  focusNodeInViewport,
   moveNodeOrGroup,
   moveNodeOrSelection,
   nodesInRect,
@@ -28,10 +29,40 @@ describe("selectionAfterClick", () => {
 });
 
 describe("nodesInRect", () => {
-  it("returns image nodes intersecting a marquee rectangle", () => {
+  it("returns every visible canvas object intersecting a marquee rectangle", () => {
     const inside = { ...node, id: "inside", x: 20, y: 20 };
+    const text = { ...node, id: "text", type: "text" as const, x: 80, y: 80 };
+    const hidden = { ...node, id: "hidden", visible: false, x: 40, y: 40 };
     const outside = { ...node, id: "outside", x: 400, y: 400 };
-    expect(nodesInRect([inside, outside], { x: 0, y: 0, width: 180, height: 180 })).toEqual(["inside"]);
+    expect(nodesInRect([inside, text, hidden, outside], { x: 0, y: 0, width: 180, height: 180 })).toEqual(["inside", "text"]);
+  });
+});
+
+describe("focusNodeInViewport", () => {
+  it("centers and scales a distant large object into the usable viewport", () => {
+    const result = focusNodeInViewport({
+      node: { ...node, x: 900, y: 700, width: 1024, height: 1024 },
+      position: { x: 0, y: 0 },
+      reserveBottom: 180,
+      scale: 0.72,
+      viewport: { width: 1000, height: 700 },
+    });
+    const screenX = 900 * result.scale + result.position.x;
+    const screenY = 700 * result.scale + result.position.y;
+    expect(screenX).toBeGreaterThanOrEqual(40);
+    expect(screenY).toBeGreaterThanOrEqual(40);
+    expect(screenX + 1024 * result.scale).toBeLessThanOrEqual(960);
+    expect(screenY + 1024 * result.scale).toBeLessThanOrEqual(480);
+  });
+
+  it("does not move an object that is already fully visible", () => {
+    expect(focusNodeInViewport({
+      node: { ...node, x: 100, y: 100 },
+      position: { x: 0, y: 0 },
+      reserveBottom: 0,
+      scale: 1,
+      viewport: { width: 800, height: 600 },
+    })).toEqual({ position: { x: 0, y: 0 }, scale: 1 });
   });
 });
 

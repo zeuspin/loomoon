@@ -16,14 +16,16 @@
   },
   "dependencies": {
     "@loomoon/agent-ui": "workspace:*",
-    "@loomoon/contracts": "workspace:*",
     "@loomoon/canvas-domain": "workspace:*",
+    "@loomoon/contracts": "workspace:*",
     "@loomoon/design-tokens": "workspace:*",
     "@loomoon/ui": "workspace:*",
+    "@remixicon/react": "^4.9.0",
     "konva": "^10.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-konva": "^19.0.0"
+    "react-konva": "^19.0.0",
+    "react-konva-utils": "^2.0.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.0",

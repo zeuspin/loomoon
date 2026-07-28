@@ -65,4 +65,26 @@ describe("agent message state", () => {
     expect(merged[0]?.id).toBe("server-1");
     expect(merged[0]?.deliveryStatus).toBe("sent");
   });
+
+  test("reconciles a homepage launch message with the first persisted user message", () => {
+    const launch = optimisticUserMessage({
+      clientMessageId: "launch-1",
+      sessionId: "session-1",
+      projectId: "project-1",
+      content: "设计一张夏日海报",
+      selectionSnapshot: [],
+      createdAt: "2026-07-27T10:00:00.000Z",
+    });
+    const serverMessage = persisted({
+      id: "server-launch-1",
+      content: "设计一张夏日海报",
+      selectionSnapshot: [],
+      createdAt: "2026-07-27T10:00:01.000Z",
+    });
+
+    const merged = mergeAgentMessages([serverMessage], [launch]);
+
+    expect(merged).toHaveLength(1);
+    expect(merged[0]?.id).toBe("server-launch-1");
+  });
 });

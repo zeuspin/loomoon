@@ -19,7 +19,7 @@ SSE 流程，但图片由 Mock Provider 生成，不调用付费百炼图片接�
 - `pnpm env:check` 成功且不输出 API Key；
 - `pnpm test`、`pnpm typecheck`、`pnpm build` 成功；
 - API 健康检查返回 `{"status":"ok","service":"api"}`；
-- Web 可通过 `http://localhost:5173` 访问。
+- Web 可通过 `http://localhost:6001` 访问。
 
 ## 垂直闭环
 

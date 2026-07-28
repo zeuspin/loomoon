@@ -45,4 +45,15 @@ describe("parseServerEnv", () => {
       })
     ).toThrow(/BAILIAN_API_KEY/);
   });
+
+  it("provides the documented fallback and draft image models", () => {
+    const env = parseServerEnv({
+      ...valid,
+      BAILIAN_IMAGE_FALLBACK_MODEL: undefined,
+      BAILIAN_DRAFT_IMAGE_MODEL: undefined,
+    });
+
+    expect(env.BAILIAN_IMAGE_FALLBACK_MODEL).toBe("qwen-image-2.0-pro-2026-06-22");
+    expect(env.BAILIAN_DRAFT_IMAGE_MODEL).toBe("wan2.7-image");
+  });
 });

@@ -1,8 +1,10 @@
 import type {
   AgentRunResult,
   AgentSession,
+  CanvasGeneratorSnapshot,
   CanvasNode,
   DemoProject,
+  ImageModelCapability,
   PersistentAgentMessage,
   PersistentAgentRun
 } from "@loomoon/contracts";
@@ -80,6 +82,19 @@ export const api = {
   bootstrap: () => request<DemoProject>("/api/v1/demo/bootstrap", { method: "POST" }),
   listProjects: () => request<ProjectSummary[]>("/api/v1/projects"),
   getProject: (projectId: string) => request<DemoProject>(`/api/v1/projects/${projectId}`),
+  getImageModels: () => request<ImageModelCapability[]>("/api/v1/image-models"),
+  generateFromCanvas: (
+    projectId: string,
+    generatorNodeId: string,
+    config: CanvasGeneratorSnapshot,
+    idempotencyKey: string,
+  ) => request<DemoProject>(
+    `/api/v1/projects/${projectId}/generators/${generatorNodeId}/generate`,
+    {
+      method: "POST",
+      body: JSON.stringify({ config, idempotencyKey }),
+    },
+  ),
   createProject: (name: string) =>
     request<DemoProject>("/api/v1/projects", { method: "POST", body: JSON.stringify({ name }) }),
   renameProject: (projectId: string, name: string) =>

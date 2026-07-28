@@ -44,7 +44,7 @@ pnpm dev:mock
 `dev:mock` 仅替换模型 Provider，登录、项目隔离、确认门、任务状态、画布、
 生成历史和持久化路径与本地 Demo 相同。
 
-打开 <http://localhost:5173>，按以下顺序验证：
+打开 <http://localhost:6001>，按以下顺序验证：
 
 1. 使用 `demo@loomoon.local / loomoon-demo` 登录；
 2. 点击“试试青柠气泡水广告”，发送示例需求；
@@ -88,7 +88,7 @@ pnpm dev
 
 访问：
 
-- Web：<http://localhost:5173>
+- Web：<http://localhost:6001>
 - API 健康检查：<http://localhost:3000/api/v1/health/live>
 - MinIO Console：<http://localhost:9001>
 

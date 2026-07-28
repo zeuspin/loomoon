@@ -21,6 +21,33 @@ const application: AgentToolApplication = {
 };
 
 describe("AgentCoordinator", () => {
+  it("reuses a session within one project but isolates sessions and messages across projects", async () => {
+    const root = await mkdtemp(join(tmpdir(), "loomoon-agent-"));
+    const repository = new JsonAgentRepository(root);
+    const coordinator = new AgentCoordinator({
+      repository,
+      runtimeFactory: () => ({
+        completeWithTrace: async () => ({ text: "完成", model: "qwen" }),
+      }),
+      applicationFor: () => application,
+    });
+
+    const first = await coordinator.createSession("user-1", "project-1");
+    const firstAgain = await coordinator.createSession("user-1", "project-1");
+    const second = await coordinator.createSession("user-1", "project-2");
+    await coordinator.sendMessage({
+      userId: "user-1",
+      sessionId: first.id,
+      content: "项目一的需求",
+      selectedNodeIds: [],
+    });
+
+    expect(firstAgain.id).toBe(first.id);
+    expect(second.id).not.toBe(first.id);
+    expect((await coordinator.getSessionTimeline("user-1", second.id)).messages)
+      .toEqual([]);
+  });
+
   it("persists a run, immutable selection, Pi events, and tool audit", async () => {
     const root = await mkdtemp(join(tmpdir(), "loomoon-agent-"));
     const repository = new JsonAgentRepository(root);

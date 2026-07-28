@@ -30,6 +30,35 @@ export interface GeneratedImage {
   model: string;
 }
 
+export interface ImageGenerationOptions {
+  modelId?: string;
+  width?: number;
+  height?: number;
+  quality?: "auto" | "high" | "medium" | "low";
+  bboxList?: number[][][];
+  seed?: number;
+}
+
+export type BailianErrorCode =
+  | "BAILIAN_AUTH_ERROR"
+  | "BAILIAN_RATE_LIMITED"
+  | "BAILIAN_TIMEOUT"
+  | "BAILIAN_INVALID_RESPONSE"
+  | "BAILIAN_UNAVAILABLE";
+
+export class BailianProviderError extends Error {
+  override readonly name = "BailianProviderError";
+
+  constructor(
+    readonly code: BailianErrorCode,
+    readonly requestId?: string,
+    readonly providerCode?: string,
+    readonly providerMessage?: string,
+  ) {
+    super(code);
+  }
+}
+
 export class BailianClient {
   readonly #apiKey: string;
   readonly #baseUrl: string;
@@ -126,10 +155,18 @@ export class BailianClient {
     }
   }
 
-  async generateImage(prompt: string, imageDataUrls: string[] = [], bboxList?: number[][][]): Promise<GeneratedImage> {
+  async generateImage(
+    prompt: string,
+    imageDataUrls: string[] = [],
+    optionsOrBbox?: ImageGenerationOptions | number[][][],
+  ): Promise<GeneratedImage> {
+    const options = Array.isArray(optionsOrBbox)
+      ? { bboxList: optionsOrBbox }
+      : (optionsOrBbox ?? {});
+    const modelId = options.modelId ?? this.#imageModel;
     const generationBase = this.#baseUrl.replace(/\/compatible-mode\/v1$/, "");
     const body: Record<string, unknown> = {
-      model: this.#imageModel,
+      model: modelId,
       input: {
         messages: [
           {
@@ -142,25 +179,34 @@ export class BailianClient {
         ]
       },
       parameters: {
-        size: "2K",
+        size: options.width && options.height ? `${options.width}*${options.height}` : "2K",
         n: 1,
         watermark: false,
-        ...(bboxList ? { bbox_list: bboxList } : {})
+        ...(options.quality && options.quality !== "auto" ? { quality: options.quality } : {}),
+        ...(options.seed !== undefined ? { seed: options.seed } : {}),
+        ...(options.bboxList ? { bbox_list: options.bboxList } : {})
       }
     };
     const response = await this.#request(
       `${generationBase}/api/v1/services/aigc/multimodal-generation/generation`,
       body
     );
-    const [url] = extractImageUrls(response);
-    if (!url) throw new Error("BAILIAN_INVALID_RESPONSE");
     const requestId =
       response && typeof response === "object" && "request_id" in response
         ? String((response as { request_id: unknown }).request_id)
         : undefined;
+    const [url] = extractImageUrls(response);
+    if (!url) {
+      throw new BailianProviderError(
+        "BAILIAN_INVALID_RESPONSE",
+        requestId,
+        "EMPTY_IMAGE_RESULT",
+        "响应中没有图片内容",
+      );
+    }
     return {
       url,
-      model: this.#imageModel,
+      model: modelId,
       ...(requestId ? { requestId } : {})
     };
   }
@@ -195,9 +241,15 @@ export class BailianClient {
               : response.status >= 500
                 ? "BAILIAN_UNAVAILABLE"
                 : "BAILIAN_INVALID_RESPONSE";
-        throw new Error(`${code}:${requestId}`);
+        const providerCode = payload && typeof payload === "object" && "code" in payload
+          ? String((payload as { code: unknown }).code)
+          : undefined;
+        const providerMessage = payload && typeof payload === "object" && "message" in payload
+          ? String((payload as { message: unknown }).message).slice(0, 500)
+          : undefined;
+        throw new BailianProviderError(code, requestId, providerCode, providerMessage);
       } catch (error) {
-        if (error instanceof Error && error.message.startsWith("BAILIAN_")) throw error;
+        if (error instanceof BailianProviderError) throw error;
         if (attempt < 2) {
           await delay(500 * 2 ** attempt);
           continue;
@@ -222,9 +274,9 @@ function parsePlanDraft(content: string): PlanDraft {
 
 function normalizeProviderError(error: unknown): Error {
   const message = error instanceof Error ? error.message : "";
-  if (/401|403|unauthori|api.?key/i.test(message)) return new Error("BAILIAN_AUTH_ERROR");
-  if (/429|rate.?limit|too many/i.test(message)) return new Error("BAILIAN_RATE_LIMITED");
-  if (/timeout|timed out|abort/i.test(message)) return new Error("BAILIAN_TIMEOUT");
-  if (/json|direction|response|content/i.test(message)) return new Error("BAILIAN_INVALID_RESPONSE");
-  return new Error("BAILIAN_UNAVAILABLE");
+  if (/401|403|unauthori|api.?key/i.test(message)) return new BailianProviderError("BAILIAN_AUTH_ERROR");
+  if (/429|rate.?limit|too many/i.test(message)) return new BailianProviderError("BAILIAN_RATE_LIMITED");
+  if (/timeout|timed out|abort/i.test(message)) return new BailianProviderError("BAILIAN_TIMEOUT");
+  if (/json|direction|response|content/i.test(message)) return new BailianProviderError("BAILIAN_INVALID_RESPONSE");
+  return new BailianProviderError("BAILIAN_UNAVAILABLE");
 }

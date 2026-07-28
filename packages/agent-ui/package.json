@@ -23,6 +23,7 @@
     "@loomoon/contracts": "workspace:*",
     "@loomoon/design-tokens": "workspace:*",
     "@loomoon/ui": "workspace:*",
+    "@remixicon/react": "^4.9.0",
     "react": "^19.0.0"
   },
   "devDependencies": {

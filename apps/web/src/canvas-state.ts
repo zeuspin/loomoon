@@ -58,7 +58,7 @@ interface SelectionRect {
 
 export function nodesInRect(nodes: CanvasNode[], rect: SelectionRect): string[] {
   return nodes
-    .filter((node) => node.type === "image")
+    .filter((node) => node.visible !== false)
     .filter(
       (node) =>
         node.x < rect.x + rect.width &&
@@ -73,6 +73,46 @@ export function nodesInRect(nodes: CanvasNode[], rect: SelectionRect): string[] 
 interface Point {
   x: number;
   y: number;
+}
+
+export function focusNodeInViewport(input: {
+  node: CanvasNode;
+  position: Point;
+  reserveBottom?: number;
+  scale: number;
+  viewport: { width: number; height: number };
+}): { scale: number; position: Point } {
+  const padding = 40;
+  const reserveBottom = input.reserveBottom ?? 0;
+  const usableRight = input.viewport.width - padding;
+  const usableBottom = input.viewport.height - reserveBottom - padding;
+  const screenLeft = input.node.x * input.scale + input.position.x;
+  const screenTop = input.node.y * input.scale + input.position.y;
+  const screenRight = screenLeft + input.node.width * input.scale;
+  const screenBottom = screenTop + input.node.height * input.scale;
+  if (
+    screenLeft >= padding &&
+    screenTop >= padding &&
+    screenRight <= usableRight &&
+    screenBottom <= usableBottom
+  ) {
+    return { scale: input.scale, position: input.position };
+  }
+
+  const usableWidth = Math.max(1, input.viewport.width - padding * 2);
+  const usableHeight = Math.max(1, input.viewport.height - reserveBottom - padding * 2);
+  const scale = Math.max(0.25, Math.min(
+    input.scale,
+    usableWidth / input.node.width,
+    usableHeight / input.node.height,
+  ));
+  return {
+    scale,
+    position: {
+      x: padding + (usableWidth - input.node.width * scale) / 2 - input.node.x * scale,
+      y: padding + (usableHeight - input.node.height * scale) / 2 - input.node.y * scale,
+    },
+  };
 }
 
 export function zoomStageAroundPoint(input: {

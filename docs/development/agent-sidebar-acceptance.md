@@ -14,7 +14,7 @@
 
 ## 浏览器验收
 
-2026-07-25 在本地 Demo `http://localhost:5173/` 完成以下检查：
+2026-07-25 在本地 Demo `http://localhost:6001/` 完成以下检查：
 
 - 页面启动后 `data-theme="light"`，即使浏览器此前保存过 `dark` 或 `system`。
 - Agent 侧栏由 assistant-ui primitives 渲染，历史消息、图片任务和生成结果可见。

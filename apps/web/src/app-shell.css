@@ -1,0 +1,555 @@
+:root {
+  --lm-border: #e2e3e5;
+  --lm-muted: #8d9199;
+  --lm-text: #111111;
+  --lm-workspace: #f4f5f6;
+}
+
+body {
+  min-width: 0;
+  overflow: auto;
+}
+
+.lm-shell-loading {
+  align-items: center;
+  background: #fff;
+  color: var(--lm-muted);
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+}
+
+.lm-app-shell {
+  background: #fff;
+  color: var(--lm-text);
+  min-height: 100vh;
+}
+
+.lm-desktop-header {
+  align-items: center;
+  display: flex;
+  height: 50px;
+  justify-content: space-between;
+  left: 0;
+  padding: 0 0 0 22px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 30;
+}
+
+.lm-shell-brand {
+  align-items: center;
+  display: inline-flex;
+  font-size: 20px;
+  gap: 8px;
+}
+
+.lm-glyph {
+  display: grid;
+  grid-template-columns: repeat(2, 9px);
+  grid-template-rows: repeat(2, 9px);
+  height: 23px;
+  place-content: center;
+  transform: rotate(45deg);
+  width: 23px;
+}
+
+.lm-glyph > i {
+  background: currentColor;
+  display: block;
+  height: 9px;
+  width: 9px;
+}
+
+.lm-glyph > i:first-child,
+.lm-glyph > i:last-child {
+  height: 6px;
+  margin: 1.5px;
+  width: 6px;
+}
+
+.lm-header-actions {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.lm-header-actions button {
+  background: #f4f4f4;
+  border-radius: 11px;
+  color: var(--lm-text);
+  font-size: 12px;
+  min-height: 30px;
+  padding: 0 13px;
+}
+
+.lm-header-actions button svg {
+  height: 14px;
+  margin-right: 4px;
+  vertical-align: -2px;
+  width: 14px;
+}
+
+.lm-header-actions .lm-login-trigger {
+  background: #111;
+  color: #fff;
+}
+
+.lm-shell-rail {
+  bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  left: 24px;
+  position: fixed;
+  top: 289px;
+  width: 54px;
+  z-index: 25;
+}
+
+.lm-shell-rail > div {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--lm-border);
+  border-radius: 28px;
+  box-shadow: 0 10px 28px #1111110a;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+}
+
+.lm-shell-rail button {
+  align-items: center;
+  background: transparent;
+  border-radius: 50%;
+  color: var(--lm-text);
+  display: flex;
+  font-size: 21px;
+  height: 38px;
+  justify-content: center;
+  width: 38px;
+}
+
+.lm-shell-rail .lm-rail-create {
+  background: #111;
+  border: 7px solid #fff;
+  box-shadow: 0 0 0 1px var(--lm-border), 0 8px 22px #1112;
+  color: #fff;
+  font-size: 28px;
+  height: 50px;
+  width: 50px;
+}
+
+.lm-shell-rail svg {
+  height: 22px;
+  width: 22px;
+}
+
+.lm-shell-rail > span {
+  color: var(--lm-muted);
+  font-size: 9px;
+  text-align: center;
+}
+
+.lm-shell-main {
+  min-height: 100vh;
+  padding-top: 50px;
+}
+
+.lm-shell-home-placeholder {
+  margin: 0 auto;
+  max-width: 1320px;
+  padding: 130px 76px 100px;
+}
+
+.lm-shell-hero {
+  margin: 0 auto;
+  max-width: 730px;
+  text-align: center;
+}
+
+.lm-shell-hero h1 {
+  align-items: center;
+  display: flex;
+  font-size: 38px;
+  gap: 12px;
+  justify-content: center;
+  margin: 0;
+}
+
+.lm-shell-hero h1 span {
+  font-weight: 500;
+}
+
+.lm-shell-hero > p {
+  color: #a7a7aa;
+  margin: 15px 0 34px;
+}
+
+.lm-shell-composer {
+  border: 1px solid #d9dadc;
+  border-radius: 18px;
+  box-shadow: 0 12px 28px #1111110b;
+  min-height: 132px;
+  padding: 20px;
+  text-align: left;
+}
+
+.lm-shell-composer textarea {
+  border: 0;
+  color: var(--lm-text);
+  min-height: 58px;
+  outline: 0;
+  resize: none;
+  width: 100%;
+}
+
+.lm-shell-composer footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.lm-shell-composer button {
+  background: #f0f1f2;
+  border-radius: 50%;
+  height: 34px;
+  width: 34px;
+}
+
+.lm-quick-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+.lm-quick-prompts button {
+  background: #fff;
+  border: 1px solid var(--lm-border);
+  border-radius: 999px;
+  padding: 8px 13px;
+}
+
+.lm-home-section {
+  margin-top: 110px;
+}
+
+.lm-home-section h2 {
+  font-size: 18px;
+}
+
+.lm-placeholder-row,
+.lm-placeholder-grid {
+  background: linear-gradient(90deg, #f5f5f5, #fafafa, #f5f5f5);
+  border-radius: 16px;
+  height: 190px;
+}
+
+.lm-placeholder-grid {
+  height: 360px;
+}
+
+.lm-route-placeholder {
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 160px 80px;
+  text-align: center;
+}
+
+.lm-route-placeholder .lm-glyph {
+  margin: auto;
+}
+
+.lm-route-placeholder p {
+  color: var(--lm-muted);
+}
+
+.lm-auth-backdrop {
+  align-items: center;
+  background: #000b;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 24px;
+  position: fixed;
+  z-index: 100;
+}
+
+.lm-auth-dialog {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 28px 100px #0006;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: 760px;
+  min-height: 500px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.lm-auth-visual {
+  align-items: center;
+  background: linear-gradient(145deg, #232323, #5f5b62);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.lm-auth-visual > .lm-glyph {
+  transform: rotate(45deg) scale(2.2);
+}
+
+.lm-auth-visual > div {
+  display: flex;
+  flex-direction: column;
+  margin-top: 32px;
+  text-align: center;
+}
+
+.lm-auth-visual strong {
+  font-size: 23px;
+}
+
+.lm-auth-visual span {
+  margin-top: 8px;
+  opacity: 0.68;
+}
+
+.lm-auth-visual > i {
+  background: linear-gradient(145deg, #ffffff18, transparent);
+  border: 1px solid #ffffff24;
+  border-radius: 48%;
+  height: 240px;
+  position: absolute;
+  transform: rotate(28deg);
+  width: 160px;
+}
+
+.lm-auth-visual > i:last-child {
+  transform: rotate(-38deg) translate(80px, 90px);
+}
+
+.lm-auth-form {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 42px;
+  position: relative;
+}
+
+.lm-auth-form small {
+  color: var(--lm-muted);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+}
+
+.lm-auth-form h2 {
+  font-size: 27px;
+  margin: 8px 0 4px;
+}
+
+.lm-auth-form > div > p,
+.lm-auth-legal {
+  color: var(--lm-muted);
+  font-size: 11px;
+  margin: 0;
+}
+
+.lm-auth-form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  gap: 7px;
+}
+
+.lm-auth-form input {
+  background: #f7f7f7;
+  border: 1px solid var(--lm-border);
+  border-radius: 10px;
+  outline: 0;
+  padding: 12px;
+}
+
+.lm-auth-form input:focus {
+  border-color: #111;
+  box-shadow: 0 0 0 3px #1111;
+}
+
+.lm-auth-submit {
+  background: #111;
+  border-radius: 10px;
+  color: #fff;
+  padding: 13px;
+}
+
+.lm-auth-error {
+  background: #fff0ed;
+  border-radius: 8px;
+  color: #a74435;
+  font-size: 11px;
+  margin: 0;
+  padding: 9px;
+}
+
+.lm-auth-close {
+  background: transparent;
+  font-size: 24px;
+  position: absolute;
+  right: 18px;
+  top: 15px;
+}
+
+.lm-auth-form aside {
+  background: #f5f5f5;
+  border-radius: 10px;
+  color: var(--lm-muted);
+  display: flex;
+  flex-direction: column;
+  font-size: 10px;
+  gap: 4px;
+  padding: 10px;
+}
+
+.lm-simple-overlay {
+  align-items: center;
+  background: #0007;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: fixed;
+  z-index: 90;
+}
+
+.lm-simple-overlay section {
+  background: #fff;
+  border-radius: 18px;
+  min-width: 320px;
+  padding: 30px;
+  position: relative;
+}
+
+.lm-simple-overlay section > button {
+  background: transparent;
+  font-size: 22px;
+  position: absolute;
+  right: 14px;
+  top: 10px;
+}
+
+.lm-mobile-header {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .lm-desktop-header,
+  .lm-shell-rail {
+    display: none;
+  }
+
+  .lm-mobile-header {
+    align-items: center;
+    background: #fff;
+    display: flex;
+    height: 54px;
+    justify-content: space-between;
+    padding: 0 12px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 30;
+  }
+
+  .lm-mobile-header > button {
+    background: #fff;
+    border: 1px solid var(--lm-border);
+    border-radius: 50%;
+    height: 34px;
+    min-width: 34px;
+  }
+
+  .lm-mobile-header .lm-mobile-avatar {
+    border: 0;
+    font-size: 10px;
+  }
+
+  .lm-shell-rail.is-open {
+    background: #fff;
+    border-right: 1px solid var(--lm-border);
+    bottom: 0;
+    display: flex;
+    left: 0;
+    padding: 80px 14px 20px;
+    top: 0;
+    width: 86px;
+    z-index: 29;
+  }
+
+  .lm-shell-main {
+    padding-top: 54px;
+  }
+
+  .lm-shell-home-placeholder {
+    padding: 92px 10px 64px;
+  }
+
+  .lm-shell-hero h1 {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    font-size: 31px;
+    gap: 8px;
+    line-height: 1.15;
+  }
+
+  .lm-shell-hero h1 span {
+    flex-basis: 100%;
+  }
+
+  .lm-shell-hero > p {
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+
+  .lm-shell-composer {
+    min-height: 120px;
+  }
+
+  .lm-home-section {
+    margin-top: 64px;
+  }
+
+  .lm-auth-dialog {
+    display: block;
+    max-width: 420px;
+    min-height: 0;
+  }
+
+  .lm-auth-visual {
+    display: none;
+  }
+
+  .lm-auth-form {
+    padding: 34px 24px 24px;
+  }
+}
+.lm-shell-status-toast {
+  position: fixed;
+  z-index: 120;
+  left: 50%;
+  bottom: 28px;
+  max-width: min(420px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  border: 1px solid #ead5d2;
+  border-radius: 12px;
+  background: #fff8f7;
+  box-shadow: 0 12px 32px rgb(21 21 21 / 12%);
+  color: #9f3f36;
+  padding: 11px 16px;
+  font-size: 14px;
+}

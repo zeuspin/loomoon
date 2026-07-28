@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { AuthService } from "./auth-service.js";
 import type { AgentCoordinator } from "./agent-coordinator.js";
+import { createImageModelCatalog } from "./image-model-catalog.js";
 
 const provider: DemoProvider = {
   async createPlan() {
@@ -44,6 +45,60 @@ describe("GET /api/v1/health/live", () => {
 });
 
 describe("demo routes", () => {
+  it("exposes configured image models and submits a canvas generator", async () => {
+    const service = new DemoService(new MemoryProjectStore(), provider);
+    const project = await service.bootstrap();
+    const modelCatalog = createImageModelCatalog({
+      primaryModelId: "wan2.7-image-pro",
+      fallbackModelId: "qwen-image-pro",
+      draftModelId: "wan2.7-image",
+    });
+    await service.saveCanvas(project.id, [{
+      id: "generator-1",
+      type: "image-generator",
+      x: 40,
+      y: 60,
+      width: 512,
+      height: 512,
+      generator: {
+        prompt: "白猫",
+        referenceNodeIds: [],
+        referenceAssetUrls: [],
+        modelId: "wan2.7-image-pro",
+        quality: "medium",
+        sizePreset: "1:1",
+        aspectRatio: "1:1",
+        outputCount: 1,
+        status: "draft",
+      },
+    }], project.canvas.version);
+    const app = buildApp({ demoService: service, imageModelCatalog: modelCatalog });
+
+    const models = await app.inject({ method: "GET", url: "/api/v1/image-models" });
+    const generated = await app.inject({
+      method: "POST",
+      url: `/api/v1/projects/${project.id}/generators/generator-1/generate`,
+      payload: {
+        idempotencyKey: "submit-1",
+        config: {
+          prompt: "白猫",
+          modelId: "wan2.7-image-pro",
+          quality: "medium",
+          sizePreset: "1:1",
+          aspectRatio: "1:1",
+          outputCount: 1,
+          referenceAssetUrls: [],
+        },
+      },
+    });
+
+    expect(models.statusCode).toBe(200);
+    expect(models.json()).toHaveLength(3);
+    expect(generated.statusCode).toBe(200);
+    expect(generated.json().canvas.nodes[0]).toMatchObject({ id: "generator-1", type: "image" });
+    await app.close();
+  });
+
   it("reports an active Agent run as a non-retryable conflict", async () => {
     const auth = await AuthService.createDemo();
     const coordinator = {
