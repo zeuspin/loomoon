@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "status": "candidate",
+  "fontSelection": {
+    "cjk": "Noto Sans SC Variable (OFL-1.1)",
+    "latin": "Inter Variable (OFL-1.1)"
+  },
+  "viewports": ["1280x720", "1440x900", "1920x1080", "1194x834", "1366x1024"],
+  "screenshots": [],
+  "approvalReceipt": null
+}
+

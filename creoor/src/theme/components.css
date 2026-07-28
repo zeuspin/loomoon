@@ -1,0 +1,15 @@
+:root {
+  --panel-background: var(--surface-floating);
+  --panel-border: var(--border-subtle);
+  --panel-radius: var(--primitive-radius-panel);
+  --panel-shadow: var(--primitive-shadow-float);
+  --panel-backdrop-blur: var(--primitive-blur-panel);
+  --toolbar-button-size: var(--primitive-size-10);
+  --toolbar-active-background: var(--action-primary-soft);
+  --canvas-selection-stroke-width: 2;
+  --motion-panel-duration-ms: 210;
+  --motion-panel-duration: var(--primitive-duration-panel);
+  --motion-fast-duration: var(--primitive-duration-fast);
+  --motion-ease: var(--primitive-ease-standard);
+}
+
